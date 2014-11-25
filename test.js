@@ -30,7 +30,6 @@ describe('fill range', function () {
   });
 
   it('should fill in rangines using the given increment', function () {
-    range('000', '005').should.eql([ '0', '1', '2', '3', '4', '5' ]);
     range('1', '10').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range('1', '10', '1').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range('1', '10', '2').should.eql([ '1', '3', '5', '7', '9' ]);
@@ -99,7 +98,10 @@ describe('fill range', function () {
 
     it('should expose the index as the third param.', function () {
       var res = range('a', 'e', function (val, isLetter, i) {
-        return String.fromCharCode(val) + i;
+        if (isLetter) {
+          return String.fromCharCode(val) + i;
+        }
+        return val;
       });
       res.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
     });
