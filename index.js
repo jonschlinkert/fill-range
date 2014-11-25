@@ -7,45 +7,57 @@
 
 'use strict';
 
-var repeat = require('repeat-string');
+var isNumber = require('is-number');
 
-var range = module.exports = function(a, b, c) {
-  var isLetter = !parseInt(a, 10) && +a !== 0;
-  var arr = [];
-  console.log(isLetter)
+module.exports = function fillRange(a, b, c, fn) {
+  if (typeof c === 'function') {
+    fn = c;
+    c = undefined;
+  }
+
+  var inc = typeof c !== 'undefined'
+      ? (+c < 0) ? (+c * -1) : +c
+      : 1;
+
+  var isLetter = !isNumber(+a);
   a = isLetter ? a.charCodeAt(0) : +a;
   b = isLetter ? b.charCodeAt(0) : +b;
 
-  a = a < b ? (a -= (c || 1)) : (a += (c || 1));
-
-  for (var i = 0; a < b ? (a < b) : (a > b); a < b ? i++ : i--) {
-    var val = a < b ? (a += (c || 1)) : (a -= (c || 1));
-    arr.push(String(isLetter ? String.fromCharCode(val) : pad(val, b)));
+  if (b < a) {
+    return negativeRange(a, b, inc, fn, isLetter);
   }
 
-  return arr;
+  return positiveRange(a, b, inc, fn, isLetter);
 };
 
-// function pad(a, b) {
-//   a = String(a);
-//   b = String(b);
+function positiveRange(a, b, inc, fn, isLetter) {
+  var arr = [], fn;
+  a -= inc;
 
-//   a = a[0] === '-' ? a.slice(1) : a;
-//   b = b[0] === '-' ? b.slice(1) : b;
+  for (var i = 0; a < b; i++) {
+    a += inc;
+    if (a <= b) {
+      var res = fn && fn(a, isLetter, i);
+      arr.push(res ? res : isLetter
+        ? String.fromCharCode(a)
+        : String(a));
+    }
+  }
+  return arr;
+}
 
-//   var diff = b.length - a.length;
-//   // console.log(diff)
-//   return repeat('0', diff) + a;
-// }
+function negativeRange(a, b, inc, fn, isLetter) {
+  var arr = [], fn;
+  a += inc;
 
-
-console.log(range('a', 'j'))
-console.log(range('j', 'a'))
-console.log(range(-2, -10, 2))
-console.log(range(-10, -2, 2))
-console.log(range(-10, -1))
-console.log(range(2, 10, 2))
-console.log(range(1, 9))
-console.log(range(9, -4))
-console.log(range(-9, 9, 3))
-console.log(range(0, -5))
+  for (var i = 0; a > b; i--) {
+    a -= inc;
+    if (a >= b) {
+      var res = fn && fn(a, isLetter, i);
+      arr.push(res ? res : isLetter
+        ? String.fromCharCode(a)
+        : String(a));
+    }
+  }
+  return arr;
+}
