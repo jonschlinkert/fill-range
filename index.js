@@ -15,6 +15,16 @@ module.exports = function fillRange(a, b, c, fn) {
     c = undefined;
   }
 
+  var bad = /\./.test(a)
+    || /\./.test(b)
+    || c && !isNumber(c)
+    || (!isNumber(Math.abs(a)) && isNumber(Math.abs(b))
+      || isNumber(Math.abs(a)) && !isNumber(Math.abs(b)));
+
+  if (bad) {
+    return {bad: [ '{' + [a, b, c].filter(Boolean).join('..') + '}']};
+  }
+
   var inc = typeof c !== 'undefined'
       ? (+c < 0) ? (+c * -1) : +c
       : 1;
@@ -31,7 +41,7 @@ module.exports = function fillRange(a, b, c, fn) {
 };
 
 function positiveRange(a, b, inc, fn, isLetter) {
-  var arr = [], fn;
+  var arr = [];
   a -= inc;
 
   for (var i = 0; a < b; i++) {
@@ -47,7 +57,7 @@ function positiveRange(a, b, inc, fn, isLetter) {
 }
 
 function negativeRange(a, b, inc, fn, isLetter) {
-  var arr = [], fn;
+  var arr = [];
   a += inc;
 
   for (var i = 0; a > b; i--) {
