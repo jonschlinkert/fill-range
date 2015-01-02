@@ -8,7 +8,6 @@ test/actual
 tmp
 TODO.md
 vendor
-benchmark
 
 # npmignore
 .*
