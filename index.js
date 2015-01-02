@@ -23,102 +23,68 @@ function fillRange(a, b, increment, fn) {
     increment = undefined;
   }
 
-  var invalid = (/\./.test(a) || /\./.test(b))
-    || (increment && !isNumber(increment))
-    || (!isNumber(Math.abs(a)) && isNumber(Math.abs(b)))
-    || (isNumber(Math.abs(a)) && !isNumber(Math.abs(b)));
-
-  if (invalid) {
-    return {invalid: [a, b, increment].filter(Boolean).join('..')};
-  }
-
-  var astr = a.toString();
-  var bstr = b.toString();
-  var padding;
+  validateRange(a, b, increment);
 
   // Was an increment (step) passed?
   increment = typeof increment !== 'undefined'
     ? Math.abs(increment)
     : 1;
 
+  var strA = a.toString();
+
   // is the range alphabetical? or numeric?
   var isLetter = !isNumber(a);
   a = isLetter ? a.charCodeAt(0) : +a;
   b = isLetter ? b.charCodeAt(0) : +b;
 
-  if (!isLetter) {
-    padding = isPadded(a, b);
-  }
+  var padding = isPadded(strA, isLetter);
+  var res, pad, arr = [];
+  var reverse = b < a;
+  var i = 0;
 
+  while (reverse ? (a >= b) : (a <= b)) {
+    if (padding && !isLetter) {
+      pad = padding(a);
+    }
 
-  function positiveRange(a, b, increment, fn, isLetter) {
-    var arr = [];
-    var pad = '';
-    var i = 0;
-    var res;
+    if (typeof fn === 'function') {
+      res = fn(a, isLetter, pad, i++);
+    } else if (isLetter) {
+      res = String.fromCharCode(a);
+    } else {
+      res = String(pad ? pad + a : a);
+    }
 
-    while (a <= b) {
-      // var pad = !isLetter ? String(repeat('0', padding)) : '';
-      // if (padding && !res && !isLetter) {
-      //   a = pad + a;
-      // }
+    arr.push(res);
 
-      if (typeof fn === 'function') {
-        res = fn(a, isLetter, pad, i++);
-      } else if (isLetter) {
-        res = String.fromCharCode(a);
-      } else {
-        res = String(a);
-      }
-
-      arr.push(res);
+    if (reverse) {
+      a -= increment
+    } else {
       a += increment;
     }
-    return arr;
   }
+  return arr;
+}
 
-  function negativeRange(a, b, increment, fn, isLetter) {
-    var arr = [];
-    var pad = '';
-    var i = 0;
-    var res;
+function isPadded(strA, isLetter) {
+  return !isLetter && /^-*0+[1-9]/.test(strA)
+    ? function (a) {
+      var num = strA.length - a.toString().length;
+      return repeat('0', num);
+    } : false;
+}
 
-    while (a >= b) {
-      // var pad = !isLetter ? String(repeat('0', padding)) : '';
-      // if (padding && !res && !isLetter) {
-      //   a = pad + a;
-      // }
-
-      if (typeof fn === 'function') {
-        res = fn(a, isLetter, pad, i++);
-      } else if (isLetter) {
-        res = String.fromCharCode(a);
-      } else {
-        res = String(a);
-      }
-
-      arr.push(res);
-      a -= increment;
-    }
-    return arr;
+function validateRange(a, b, increment) {
+  if (!/[\w\d]/.test(a) || !/[\w\d]/.test(b)) {
+    throw new Error('fill-range: invalid range arguments.');
   }
-
-  function isPadded(a, b, isLetter) {
-    var res = /^-*(0*)[0-9]/.exec(astr);
-    var len = res && res[1].length;
-    if (!!(res && len > 0)) {
-      return len;
-    }
-
-    return false;
+  if (!isNumber(a) && isNumber(b)) {
+    throw new TypeError('fill-range: incompatible range arguments.');
   }
-
-  function expand(a, b, increment, fn) {
-    if (b < a) {
-      return negativeRange(a, b, increment, fn, isLetter, padding);
-    }
-    return positiveRange(a, b, increment, fn, isLetter, padding);
+  if (isNumber(a) && !isNumber(b)) {
+    throw new TypeError('fill-range: incompatible range arguments.');
   }
-
-  return expand(a, b, increment, fn)
+  if (increment && !isNumber(increment)) {
+    throw new TypeError('fill-range: invalid increment.');
+  }
 }
