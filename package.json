@@ -14,25 +14,26 @@
   "bugs": {
     "url": "https://github.com/jonschlinkert/fill-range/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/jonschlinkert/fill-range/blob/master/LICENSE-MIT"
-    }
-  ],
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/jonschlinkert/fill-range/blob/master/LICENSE-MIT"
+  },
   "main": "index.js",
   "engines": {
     "node": ">=0.10.0"
   },
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "mocha -R spec",
+    "docs": "update && license && npmignore && deps && verb",
+    "all": "npm run test && npm run docs"
   },
   "dependencies": {
-    "alphabet": "^0.1.0",
-    "is-number": "^0.1.1"
+    "is-number": "^0.1.1",
+    "repeat-string": "^1.2.0"
   },
   "devDependencies": {
-    "mocha": "*",
+    "benchmarked": "^0.1.3",
+    "chalk": "^0.5.1",
     "should": "*"
   },
   "keywords": [

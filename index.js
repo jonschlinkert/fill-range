@@ -1,73 +1,95 @@
 /*!
  * fill-range <https://github.com/jonschlinkert/fill-range>
  *
- * Copyright (c) 2014 Jon Schlinkert, contributors.
+ * Copyright (c) 2014-2015, Jon Schlinkert.
  * Licensed under the MIT license.
  */
 
 'use strict';
 
+var repeat = require('repeat-string');
 var isNumber = require('is-number');
 
-module.exports = function fillRange(a, b, c, fn) {
-  if (typeof c === 'function') {
-    fn = c;
-    c = undefined;
+/**
+ * Expose `fillRange`
+ */
+
+module.exports = fillRange;
+
+
+function fillRange(a, b, step, fn) {
+  if (typeof step === 'function') {
+    fn = step;
+    step = null;
   }
 
-  var bad = /\./.test(a)
-    || /\./.test(b)
-    || c && !isNumber(c)
-    || (!isNumber(Math.abs(a)) && isNumber(Math.abs(b))
-      || isNumber(Math.abs(a)) && !isNumber(Math.abs(b)));
+  validateRange(a, b, step);
 
-  if (bad) {
-    return {bad: [ '{' + [a, b, c].filter(Boolean).join('..') + '}']};
-  }
+  // Was a step defined?
+  step = step
+    ? Math.abs(step)
+    : 1;
 
-  var inc = typeof c !== 'undefined'
-      ? (+c < 0) ? (+c * -1) : +c
-      : 1;
+  // store a ref to the unmodified first arg
+  var strA = a.toString();
 
-  var isLetter = !isNumber(+a);
+  // is the range alphabetical? or numeric?
+  var isLetter = !isNumber(a);
+
   a = isLetter ? a.charCodeAt(0) : +a;
   b = isLetter ? b.charCodeAt(0) : +b;
 
-  if (b < a) {
-    return negativeRange(a, b, inc, fn, isLetter);
-  }
+  // is the pattern positive or negative?
+  var isNegative = b < a;
 
-  return positiveRange(a, b, inc, fn, isLetter);
-};
+  // detect padding
+  var padding = isPadded(strA, isLetter);
+  var res, pad, arr = [];
+  var i = 0;
 
-function positiveRange(a, b, inc, fn, isLetter) {
-  var arr = [];
-  a -= inc;
+  while (isNegative ? (a >= b) : (a <= b)) {
+    if (padding && !isLetter) {
+      pad = padding(a);
+    }
 
-  for (var i = 0; a < b; i++) {
-    a += inc;
-    if (a <= b) {
-      var res = fn && fn(a, isLetter, i);
-      arr.push(res ? res : isLetter
-        ? String.fromCharCode(a)
-        : String(a));
+    if (typeof fn === 'function') {
+      res = fn(a, isLetter, pad, i++);
+    } else if (isLetter) {
+      res = String.fromCharCode(a);
+    } else {
+      res = String(pad ? pad + a : a);
+    }
+
+    arr.push(res);
+
+    if (isNegative) {
+      a -= step;
+    } else {
+      a += step;
     }
   }
   return arr;
 }
 
-function negativeRange(a, b, inc, fn, isLetter) {
-  var arr = [];
-  a += inc;
+function isPadded(strA, isLetter) {
+  return !isLetter && /^-*0+[1-9]/.test(strA)
+    ? function (a) {
+      var num = strA.length - a.toString().length;
+      return repeat('0', num);
+    } : false;
+}
 
-  for (var i = 0; a > b; i--) {
-    a -= inc;
-    if (a >= b) {
-      var res = fn && fn(a, isLetter, i);
-      arr.push(res ? res : isLetter
-        ? String.fromCharCode(a)
-        : String(a));
-    }
+function validateRange(a, b, step) {
+  if (!/[\w\d]/.test(a) || !/[\w\d]/.test(b)) {
+    throw new Error('fill-range: invalid range arguments.');
   }
-  return arr;
+  if (!isNumber(a) && isNumber(b)) {
+    throw new TypeError('fill-range: incompatible range arguments.');
+  }
+  if (isNumber(a) && !isNumber(b)) {
+    throw new TypeError('fill-range: incompatible range arguments.');
+  }
+  if (step && !isNumber(step)) {
+    throw new TypeError('fill-range: invalid step.');
+  }
 }
