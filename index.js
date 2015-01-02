@@ -7,6 +7,7 @@
 
 'use strict';
 
+var randomize = require('randomatic');
 var repeat = require('repeat-string');
 var isNumber = require('is-number');
 
@@ -23,10 +24,13 @@ function fillRange(a, b, step, fn) {
     step = null;
   }
 
+  if (step === '?') {
+    return [randomize(a, b)];
+  }
+
   validateRange(a, b, step);
 
-  // Was a step defined?
-  step = step
+  var num = step && isNumber(step)
     ? Math.abs(step)
     : 1;
 
@@ -65,12 +69,13 @@ function fillRange(a, b, step, fn) {
     arr.push(res);
 
     if (isNegative) {
-      a -= step;
+      a -= num;
     } else {
-      a += step;
+      a += num;
     }
   }
-  return arr;
+
+  return step === '>' ? [arr.join('')] : arr;
 }
 
 function isPadded(strA, isNumeric) {
@@ -91,7 +96,7 @@ function validateRange(a, b, step) {
   if (isNumber(a) && !isNumber(b)) {
     throw new TypeError('fill-range: incompatible range arguments.');
   }
-  if (step && !isNumber(step)) {
+  if (step && (!isNumber(step) && !/>/.test(step))) {
     throw new TypeError('fill-range: invalid step.');
   }
 }
