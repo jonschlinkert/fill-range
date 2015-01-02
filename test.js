@@ -88,15 +88,15 @@ describe('fill range', function () {
 
   describe('when a custom function is used for expansions', function () {
     it('should expose the current value as the first param.', function () {
-      var res = range(1, 5, function (val, isLetter, padding, i) {
+      var res = range(1, 5, function (val, isNumeric, padding, i) {
         return val;
       });
       res.should.eql([1, 2, 3, 4, 5]);
     });
 
-    it('should expose the `isLetter` boolean as the second param.', function () {
-      var res = range('a', 'e', function (val, isLetter, padding, i) {
-        if (isLetter) {
+    it('should expose the `isNumeric` boolean as the second param.', function () {
+      var res = range('a', 'e', function (val, isNumeric, padding, i) {
+        if (!isNumeric) {
           return String.fromCharCode(val);
         }
         return val;
@@ -105,15 +105,15 @@ describe('fill range', function () {
     });
 
     it('should expose padding as the third param.', function () {
-      var res = range('01', '05', function (val, isLetter, padding, i) {
+      var res = range('01', '05', function (val, isNumeric, padding, i) {
         return padding + padding + val;
       });
       res.should.eql(['001', '002', '003', '004', '005']);
     });
 
     it('should expose the index as the fourth param.', function () {
-      var res = range('a', 'e', function (val, isLetter, padding, i) {
-        if (isLetter) {
+      var res = range('a', 'e', function (val, isNumeric, padding, i) {
+        if (!isNumeric) {
           return String.fromCharCode(val) + i;
         }
         return val;

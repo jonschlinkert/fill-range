@@ -34,27 +34,29 @@ function fillRange(a, b, step, fn) {
   var strA = a.toString();
 
   // is the range alphabetical? or numeric?
-  var isLetter = !isNumber(a);
+  var isNumeric = isNumber(a);
 
-  a = isLetter ? a.charCodeAt(0) : +a;
-  b = isLetter ? b.charCodeAt(0) : +b;
+  // if numeric coerce to an integer, otherwise
+  // get the charCode to expand alpha ranges
+  a = isNumeric ? +a : a.charCodeAt(0);
+  b = isNumeric ? +b : b.charCodeAt(0);
 
   // is the pattern positive or negative?
   var isNegative = b < a;
 
   // detect padding
-  var padding = isPadded(strA, isLetter);
+  var padding = isPadded(strA, isNumeric);
   var res, pad, arr = [];
   var i = 0;
 
   while (isNegative ? (a >= b) : (a <= b)) {
-    if (padding && !isLetter) {
+    if (padding && isNumeric) {
       pad = padding(a);
     }
 
     if (typeof fn === 'function') {
-      res = fn(a, isLetter, pad, i++);
-    } else if (isLetter) {
+      res = fn(a, isNumeric, pad, i++);
+    } else if (!isNumeric) {
       res = String.fromCharCode(a);
     } else {
       res = String(pad ? pad + a : a);
@@ -71,8 +73,8 @@ function fillRange(a, b, step, fn) {
   return arr;
 }
 
-function isPadded(strA, isLetter) {
-  return !isLetter && /^-*0+[1-9]/.test(strA)
+function isPadded(strA, isNumeric) {
+  return isNumeric && /^-*0+[1-9]/.test(strA)
     ? function (a) {
       var num = strA.length - a.toString().length;
       return repeat('0', num);
