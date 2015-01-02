@@ -17,32 +17,37 @@ var isNumber = require('is-number');
 module.exports = fillRange;
 
 
-function fillRange(a, b, increment, fn) {
-  if (typeof increment === 'function') {
-    fn = increment;
-    increment = undefined;
+function fillRange(a, b, step, fn) {
+  if (typeof step === 'function') {
+    fn = step;
+    step = null;
   }
 
-  validateRange(a, b, increment);
+  validateRange(a, b, step);
 
-  // Was an increment (step) passed?
-  increment = typeof increment !== 'undefined'
-    ? Math.abs(increment)
+  // Was a step defined?
+  step = step
+    ? Math.abs(step)
     : 1;
 
+  // store a ref to the unmodified first arg
   var strA = a.toString();
 
   // is the range alphabetical? or numeric?
   var isLetter = !isNumber(a);
+
   a = isLetter ? a.charCodeAt(0) : +a;
   b = isLetter ? b.charCodeAt(0) : +b;
 
+  // is the pattern positive or negative?
+  var isNegative = b < a;
+
+  // detect padding
   var padding = isPadded(strA, isLetter);
   var res, pad, arr = [];
-  var reverse = b < a;
   var i = 0;
 
-  while (reverse ? (a >= b) : (a <= b)) {
+  while (isNegative ? (a >= b) : (a <= b)) {
     if (padding && !isLetter) {
       pad = padding(a);
     }
@@ -57,10 +62,10 @@ function fillRange(a, b, increment, fn) {
 
     arr.push(res);
 
-    if (reverse) {
-      a -= increment
+    if (isNegative) {
+      a -= step;
     } else {
-      a += increment;
+      a += step;
     }
   }
   return arr;
@@ -74,7 +79,7 @@ function isPadded(strA, isLetter) {
     } : false;
 }
 
-function validateRange(a, b, increment) {
+function validateRange(a, b, step) {
   if (!/[\w\d]/.test(a) || !/[\w\d]/.test(b)) {
     throw new Error('fill-range: invalid range arguments.');
   }
@@ -84,7 +89,7 @@ function validateRange(a, b, increment) {
   if (isNumber(a) && !isNumber(b)) {
     throw new TypeError('fill-range: incompatible range arguments.');
   }
-  if (increment && !isNumber(increment)) {
-    throw new TypeError('fill-range: invalid increment.');
+  if (step && !isNumber(step)) {
+    throw new TypeError('fill-range: invalid step.');
   }
 }
