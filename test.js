@@ -81,14 +81,15 @@ describe('fill range', function () {
     range('E', 'A').should.eql(['E', 'D', 'C', 'B', 'A']);
   });
 
-  it('should expand right when `>` is passed as the third arg:', function () {
+  it('should collapse valuse when `>` is passed in the third arg:', function () {
     range('a', 'e', '>').should.eql(['abcde']);
     range('A', 'E', '>').should.eql(['ABCDE']);
     range('E', 'A', '>').should.eql(['EDCBA']);
     range('5', '8', '>').should.eql(['5678']);
+    range('2', '20', '2>').should.eql(['2468101214161820']);
   });
 
-  it('should randomize using the first two args when `?` is passed as the third arg:', function () {
+  it('should randomize using the first two args when `?` exists in the third arg:', function () {
     range('A0', 5, '?').should.match(/[\w\d]{5}/);
     range('A0', 5, '?').should.not.match(/[\w\d]{6}/);
     range('A', 5, '?').should.not.match(/\d{5}/);

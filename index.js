@@ -24,8 +24,16 @@ function fillRange(a, b, step, fn) {
     step = null;
   }
 
-  if (step === '?') {
-    return [randomize(a, b)];
+  var expand;
+  if (typeof step === 'string') {
+    if (/\?/.test(step)) {
+      return [randomize(a, b)];
+    }
+
+    if (/>/.test(step)) {
+      step = step.replace(/>/, '');
+      expand = true;
+    }
   }
 
   validateRange(a, b, step);
@@ -75,7 +83,7 @@ function fillRange(a, b, step, fn) {
     }
   }
 
-  return step === '>' ? [arr.join('')] : arr;
+  return expand ? [arr.join('')] : arr;
 }
 
 function isPadded(strA, isNumeric) {
