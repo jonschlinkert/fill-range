@@ -66,8 +66,8 @@ range('A', 'E', 2)
 Optionally pass a custom function as the third or fourth argument:
 
 ```js
-range('a', 'e', function (val, isLetter, i) {
-  if (isLetter) {
+range('a', 'e', function (val, isNumeric, i) {
+  if (!isNumeric) {
     return String.fromCharCode(val) + i;
   }
   return val;
