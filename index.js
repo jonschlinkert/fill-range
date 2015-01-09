@@ -17,31 +17,55 @@ var isNumber = require('is-number');
 
 module.exports = fillRange;
 
+/**
+ * Return a range of numbers or letters.
+ *
+ * @param  {String} `a` Start of the range
+ * @param  {String} `b` End of the range
+ * @param  {String} `step` Increment or decrement to use.
+ * @param  {Function} `fn` Custom function to modify each element in the range.
+ * @return {Array}
+ */
 
 function fillRange(a, b, step, fn) {
+  if (a == null || b == null) {
+    throw new Error('fill-range expects the first and second args to be strings.');
+  }
+
   if (typeof step === 'function') {
     fn = step;
     step = null;
   }
 
-  // store a ref to unmodified args
-  var strA = a.toString();
-  var strB = b.toString();
+  var expand, sep = '';
 
-  var expand;
+  // store a ref to unmodified arg
+  var origA = a;
+
   b = (b.toString() === '-0') ? 0 : b;
 
+  // handle special step characters
   if (typeof step === 'string') {
-    if (/\?/.test(step)) {
+    var match = /\?|>|\|/g.exec(step);
+    var i = match && match.index;
+
+    if (match && match[0] === '?') {
       return [randomize(a, b)];
     }
 
-    if (/>/.test(step)) {
-      step = step.replace(/>/, '');
+    if (match && match[0] === '>') {
+      step = step.substr(0, i) + step.substr(i + 1);
       expand = true;
+    }
+
+    if (match && match[0] === '|') {
+      step = step.substr(0, i) + step.substr(i + 1);
+      expand = true;
+      sep = '|';
     }
   }
 
+  // validate arguments
   validateRange(a, b, step);
 
   var num = step && isNumber(step)
@@ -49,36 +73,47 @@ function fillRange(a, b, step, fn) {
     : 1;
 
   // is the range alphabetical? or numeric?
-  var isNumeric = isNumber(a);
+  var isNum = isNumber(a);
 
   // if numeric coerce to an integer, otherwise
   // get the charCode to expand alpha ranges
-  a = isNumeric ? +a : a.charCodeAt(0);
-  b = isNumeric ? +b : b.charCodeAt(0);
+  a = isNum ? +a : a.charCodeAt(0);
+  b = isNum ? +b : b.charCodeAt(0);
 
   // is the pattern positive or negative?
   var isNegative = b < a;
 
   // detect padding
-  var padding = isPadded(strA, strB);
+  var padding = isPadded(origA);
   var res, pad, arr = [];
-  var i = 0;
+  var ii = 0;
 
   while (isNegative ? (a >= b) : (a <= b)) {
-    if (padding && isNumeric) {
+    if (padding && isNum) {
       pad = padding(a);
     }
 
+    // custom function
     if (typeof fn === 'function') {
-      res = fn(a, isNumeric, pad, i++);
-    } else if (!isNumeric) {
+      res = fn(a, isNum, pad, ii++);
+
+    // letters
+    } else if (!isNum) {
       res = String.fromCharCode(a);
+
+    // numbers
     } else {
-      res = String(pad ? pad + a : a);
+      var result = pad ? pad + a : a;
+      if (pad && a.toString()[0] === '-') {
+        result = '-' + pad + a.toString().slice(1);
+      }
+      res = result.toString();
     }
 
+    // add result to the array
     arr.push(res);
 
+    // increment or decrement
     if (isNegative) {
       a -= num;
     } else {
@@ -86,29 +121,51 @@ function fillRange(a, b, step, fn) {
     }
   }
 
-  return expand ? [arr.join('')] : arr;
+  return expand ? join(arr, sep) : arr;
 }
 
-function isPadded(strA, strB) {
-  if ((!/[^.]\./.test(strA) || !/[^.]\./.test(strB)) && /^-*0+[1-9]/.test(strA)) {
+/**
+ * Join `arr` with the given `sep`
+ */
+
+function join(arr, sep) {
+  var res = arr.join(sep);
+  if (sep === '|') {
+    res = '(' + res + ')';
+  }
+  return [res];
+}
+
+/**
+ * Test for padding. Returns the actual padding string
+ * or `false` if no padding.
+ *
+ * @param  {*} `origA` String or number.
+ * @return {String|Boolean}
+ */
+
+function isPadded(origA) {
+  if (/[^.]\.|^-*0+[1-9]/.exec(origA)) {
     return function (a) {
-      return repeat('0', strA.length - a.toString().length);
-    }
+      return repeat('0', origA.toString().length - a.toString().length);
+    };
   }
   return false;
 }
+
+/**
+ * Handle errors
+ */
 
 function validateRange(a, b, step) {
   if (!/[\w\d]/.test(a) || !/[\w\d]/.test(b)) {
     throw new Error('fill-range: invalid range arguments.');
   }
-  if (!isNumber(a) && isNumber(b)) {
+  var isNumA = isNumber(a), isNumB = isNumber(b);
+  if ((!isNumA && isNumB) || (isNumA && !isNumB)) {
     throw new TypeError('fill-range: first range argument is incompatible with second.');
   }
-  if (isNumber(a) && !isNumber(b)) {
-    throw new TypeError('fill-range: first range argument is incompatible with second.');
-  }
-  if (step && (!isNumber(step) && !/>/.test(step))) {
+  if (step && (!isNumber(step) && !/>|\?|\|/.test(step))) {
     throw new TypeError('fill-range: invalid step.');
   }
 }
