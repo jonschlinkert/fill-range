@@ -29,13 +29,15 @@ describe('fill range', function () {
 
   it('should fill in negative ranges', function () {
     range('0', '-5').should.eql([ '0', '-1', '-2', '-3', '-4', '-5' ]);
-    range(0, -5).should.eql([ '0', '-1', '-2', '-3', '-4', '-5' ]);
-    range(9, -4).should.eql([ '9', '8', '7', '6', '5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4' ]);
+    range('1', '10').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range(-10, -1).should.eql([ '-10', '-9', '-8', '-7', '-6', '-5', '-4', '-3', '-2', '-1' ]);
+    range(0, -5).should.eql([ '0', '-1', '-2', '-3', '-4', '-5' ]);
+    range(1, '9').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9' ]);
+    range(1, 9).should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9' ]);
+    range(9, -4).should.eql([ '9', '8', '7', '6', '5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4' ]);
   });
 
-  it('should fill in ranges using the given increment', function () {
-    range('1', '10').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
+  it('should fill in ranges using the given step', function () {
     range('1', '10', '1').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range('1', '10', '2').should.eql([ '1', '3', '5', '7', '9' ]);
     range('1', '10', '2').should.eql([ '1', '3', '5', '7', '9' ]);
@@ -44,19 +46,17 @@ describe('fill range', function () {
     range('1', '20', '20').should.eql([ '1' ]);
     range('10', '1', '-2').should.eql([ '10', '8', '6', '4', '2' ]);
     range('10', '1', '2').should.eql([ '10', '8', '6', '4', '2' ]);
-    range(1, 9).should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9' ]);
     range(2, 10, '2').should.eql([ '2', '4', '6', '8', '10' ]);
     range(2, 10, 1).should.eql([ '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range(2, 10, 2).should.eql([ '2', '4', '6', '8', '10' ]);
     range(2, 10, 3).should.eql([ '2', '5', '8' ]);
-    range(1, '9').should.eql([ '1', '2', '3', '4', '5', '6', '7', '8', '9' ]);
     range(2, '10', '2').should.eql([ '2', '4', '6', '8', '10' ]);
     range(2, '10', 1).should.eql([ '2', '3', '4', '5', '6', '7', '8', '9', '10' ]);
     range(2, '10', '2').should.eql([ '2', '4', '6', '8', '10' ]);
     range('2', 10, '3').should.eql([ '2', '5', '8' ]);
   });
 
-  it('should fill in negative ranges using the given increment', function () {
+  it('should fill in negative ranges using the given step', function () {
     range('-1', '-10', '-2').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
     range('-1', '-10', '2').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
     range('10', '1', '-2').should.eql([ '10', '8', '6', '4', '2' ]);
@@ -67,7 +67,11 @@ describe('fill range', function () {
     range(-9, 9, 3).should.eql([ '-9', '-6', '-3', '0', '3', '6', '9' ]);
   });
 
-  it('should fill in negative ranges using the given increment', function () {
+  it('should correct `-0` in ranges:', function () {
+    range('-5', '-0', '-1').should.eql([ '-5', '-4', '-3', '-2', '-1', '0']);
+  });
+
+  it('should fill in negative ranges using the given step', function () {
     range('1', '10', '2').should.eql([ '1', '3', '5', '7', '9' ]);
     range('-1', '-10', '2').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
     range('-1', '-10', '-2').should.eql([ '-1', '-3', '-5', '-7', '-9' ]);
@@ -80,7 +84,9 @@ describe('fill range', function () {
     range('A', 'E').should.eql(['A', 'B', 'C', 'D', 'E']);
     range('E', 'A').should.eql(['E', 'D', 'C', 'B', 'A']);
   });
+});
 
+describe('when special characters are used:', function () {
   it('should collapse valuse when `>` is passed in the third arg:', function () {
     range('a', 'e', '>').should.eql(['abcde']);
     range('A', 'E', '>').should.eql(['ABCDE']);
@@ -89,7 +95,7 @@ describe('fill range', function () {
     range('2', '20', '2>').should.eql(['2468101214161820']);
   });
 
-  it('should randomize using the first two args when `?` exists in the third arg:', function () {
+  it('should randomize with the first two args when `?` is in the third arg:', function () {
     range('A0', 5, '?').should.match(/[\w\d]{5}/);
     range('A0', 5, '?').should.not.match(/[\w\d]{6}/);
     range('A', 5, '?').should.not.match(/\d{5}/);
@@ -101,40 +107,40 @@ describe('fill range', function () {
     range('a', 'e', 2).should.eql(['a','c', 'e']);
     range('E', 'A', 2).should.eql(['E', 'C', 'A']);
   });
+});
 
-  describe('when a custom function is used for expansions', function () {
-    it('should expose the current value as the first param.', function () {
-      var res = range(1, 5, function (val, isNumeric, padding, i) {
-        return val;
-      });
-      res.should.eql([1, 2, 3, 4, 5]);
+describe('when a custom function is used for expansions', function () {
+  it('should expose the current value as the first param.', function () {
+    var res = range(1, 5, function (val, isNumber, padding, i) {
+      return val;
     });
+    res.should.eql([1, 2, 3, 4, 5]);
+  });
 
-    it('should expose the `isNumeric` boolean as the second param.', function () {
-      var res = range('a', 'e', function (val, isNumeric, padding, i) {
-        if (!isNumeric) {
-          return String.fromCharCode(val);
-        }
-        return val;
-      });
-      res.should.eql(['a', 'b', 'c', 'd', 'e']);
+  it('should expose the `isNumber` boolean as the second param.', function () {
+    var res = range('a', 'e', function (val, isNumber, padding, i) {
+      if (!isNumber) {
+        return String.fromCharCode(val);
+      }
+      return val;
     });
+    res.should.eql(['a', 'b', 'c', 'd', 'e']);
+  });
 
-    it('should expose padding as the third param.', function () {
-      var res = range('01', '05', function (val, isNumeric, padding, i) {
-        return padding + padding + val;
-      });
-      res.should.eql(['001', '002', '003', '004', '005']);
+  it('should expose padding as the third param.', function () {
+    var res = range('01', '05', function (val, isNumber, padding, i) {
+      return padding + padding + val;
     });
+    res.should.eql(['001', '002', '003', '004', '005']);
+  });
 
-    it('should expose the index as the fourth param.', function () {
-      var res = range('a', 'e', function (val, isNumeric, padding, i) {
-        if (!isNumeric) {
-          return String.fromCharCode(val) + i;
-        }
-        return val;
-      });
-      res.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
+  it('should expose the index as the fourth param.', function () {
+    var res = range('a', 'e', function (val, isNumber, padding, i) {
+      if (!isNumber) {
+        return String.fromCharCode(val) + i;
+      }
+      return val;
     });
+    res.should.eql(['a0', 'b1', 'c2', 'd3', 'e4']);
   });
 });
