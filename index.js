@@ -24,7 +24,13 @@ function fillRange(a, b, step, fn) {
     step = null;
   }
 
+  // store a ref to unmodified args
+  var strA = a.toString();
+  var strB = b.toString();
+
   var expand;
+  b = (b.toString() === '-0') ? 0 : b;
+
   if (typeof step === 'string') {
     if (/\?/.test(step)) {
       return [randomize(a, b)];
@@ -42,9 +48,6 @@ function fillRange(a, b, step, fn) {
     ? Math.abs(step)
     : 1;
 
-  // store a ref to the unmodified first arg
-  var strA = a.toString();
-
   // is the range alphabetical? or numeric?
   var isNumeric = isNumber(a);
 
@@ -57,7 +60,7 @@ function fillRange(a, b, step, fn) {
   var isNegative = b < a;
 
   // detect padding
-  var padding = isPadded(strA, isNumeric);
+  var padding = isPadded(strA, strB);
   var res, pad, arr = [];
   var i = 0;
 
@@ -86,12 +89,13 @@ function fillRange(a, b, step, fn) {
   return expand ? [arr.join('')] : arr;
 }
 
-function isPadded(strA, isNumeric) {
-  return isNumeric && /^-*0+[1-9]/.test(strA)
-    ? function (a) {
-      var num = strA.length - a.toString().length;
-      return repeat('0', num);
-    } : false;
+function isPadded(strA, strB) {
+  if ((!/[^.]\./.test(strA) || !/[^.]\./.test(strB)) && /^-*0+[1-9]/.test(strA)) {
+    return function (a) {
+      return repeat('0', strA.length - a.toString().length);
+    }
+  }
+  return false;
 }
 
 function validateRange(a, b, step) {
@@ -99,10 +103,10 @@ function validateRange(a, b, step) {
     throw new Error('fill-range: invalid range arguments.');
   }
   if (!isNumber(a) && isNumber(b)) {
-    throw new TypeError('fill-range: incompatible range arguments.');
+    throw new TypeError('fill-range: first range argument is incompatible with second.');
   }
   if (isNumber(a) && !isNumber(b)) {
-    throw new TypeError('fill-range: incompatible range arguments.');
+    throw new TypeError('fill-range: first range argument is incompatible with second.');
   }
   if (step && (!isNumber(step) && !/>/.test(step))) {
     throw new TypeError('fill-range: invalid step.');
