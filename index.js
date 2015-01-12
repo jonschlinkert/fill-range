@@ -7,9 +7,10 @@
 
 'use strict';
 
-var randomize = require('randomatic');
-var repeat = require('repeat-string');
 var isNumber = require('is-number');
+var randomize = require('randomatic');
+var repeatStr = require('repeat-string');
+var repeat = require('repeat-element');
 
 /**
  * Expose `fillRange`
@@ -41,32 +42,48 @@ function fillRange(a, b, step, fn) {
 
   // store a ref to unmodified arg
   var origA = a;
+  var origB = b;
 
   b = (b.toString() === '-0') ? 0 : b;
 
   // handle special step characters
   if (typeof step === 'string') {
-    var match = /\?|>|\|/g.exec(step);
+    var match = stepRe().exec(step);
     var i = match && match.index;
 
-    if (match && match[0] === '?') {
-      return [randomize(a, b)];
-    }
+    if (match && match[0] === '+') {
+      return repeat(a, b);
 
-    if (match && match[0] === '>') {
+    } else if (match && match[0] === '?') {
+      return [randomize(a, b)];
+
+    } else if (match && match[0] === '>') {
       step = step.substr(0, i) + step.substr(i + 1);
       expand = true;
-    }
 
-    if (match && match[0] === '|') {
+    } else if (match && match[0] === '|') {
       step = step.substr(0, i) + step.substr(i + 1);
       expand = true;
       sep = '|';
+
+    }
+
+    if (!match && !isNumber(step)) {
+      throw new TypeError('fill-range: invalid step.');
     }
   }
 
+  if (!hasEither(a) || !hasEither(b) || hasBoth(a) || hasBoth(b)) {
+    throw new Error('fill-range: invalid range arguments.');
+  }
+
   // validate arguments
-  validateRange(a, b, step);
+  var isNumA = isNumber(zeros(a));
+  var isNumB = isNumber(zeros(b));
+
+  if ((!isNumA && isNumB) || (isNumA && !isNumB)) {
+    throw new TypeError('fill-range: first range argument is incompatible with second.');
+  }
 
   var num = step && isNumber(step)
     ? Math.abs(step)
@@ -84,7 +101,7 @@ function fillRange(a, b, step, fn) {
   var isNegative = b < a;
 
   // detect padding
-  var padding = isPadded(origA);
+  var padding = isPadded(origA, origB);
   var res, pad, arr = [];
   var ii = 0;
 
@@ -125,6 +142,72 @@ function fillRange(a, b, step, fn) {
 }
 
 /**
+ * Step regex
+ */
+
+function stepRe() {
+  return /\?|>|\||\+/g;
+}
+
+/**
+ * Return true if `val` has either a letter
+ * or a number
+ */
+
+function hasEither(val) {
+  return /[a-z0-9]/i.test(val);
+}
+
+/**
+ * Return true if `val` has both a letter and
+ * a number (invalid)
+ */
+
+function hasBoth(val) {
+  return /[a-z][0-9]|[0-9][a-z]/i.test(val);
+}
+
+/**
+ * Normalize zeros for checks
+ */
+
+function zeros(val) {
+  if (/^-*0+$/.test(val)) {
+    return '0';
+  }
+  return val;
+}
+
+/**
+ * Return true if `val` has leading zeros,
+ * or a similar valid pattern.
+ */
+
+function hasZeros(val) {
+  return /[^.]\.|^-*0+[0-9]/.test(val);
+}
+
+/**
+ * Test for padding. Returns the actual padding string
+ * or `false` if no padding.
+ *
+ * @param  {*} `origA` String or number.
+ * @return {String|Boolean}
+ */
+
+function isPadded(origA, origB) {
+  if (hasZeros(origA) || hasZeros(origB)) {
+    var alen = length(origA);
+    var blen = length(origB);
+    var len = alen >= blen ? alen : blen;
+    return function (a) {
+      return repeatStr('0', len - length(a));
+    };
+  }
+  return false;
+}
+
+/**
  * Join `arr` with the given `sep`
  */
 
@@ -137,35 +220,9 @@ function join(arr, sep) {
 }
 
 /**
- * Test for padding. Returns the actual padding string
- * or `false` if no padding.
- *
- * @param  {*} `origA` String or number.
- * @return {String|Boolean}
+ * Get the string length of `val`
  */
 
-function isPadded(origA) {
-  if (/[^.]\.|^-*0+[1-9]/.exec(origA)) {
-    return function (a) {
-      return repeat('0', origA.toString().length - a.toString().length);
-    };
-  }
-  return false;
-}
-
-/**
- * Handle errors
- */
-
-function validateRange(a, b, step) {
-  if (!/[\w\d]/.test(a) || !/[\w\d]/.test(b)) {
-    throw new Error('fill-range: invalid range arguments.');
-  }
-  var isNumA = isNumber(a), isNumB = isNumber(b);
-  if ((!isNumA && isNumB) || (isNumA && !isNumB)) {
-    throw new TypeError('fill-range: first range argument is incompatible with second.');
-  }
-  if (step && (!isNumber(step) && !/>|\?|\|/.test(step))) {
-    throw new TypeError('fill-range: invalid step.');
-  }
+function length(val) {
+  return val.toString().length;
 }
