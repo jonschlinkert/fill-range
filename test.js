@@ -17,6 +17,11 @@ describe('error handling', function () {
     }).should.throw('fill-range expects the first and second args to be strings.');
   });
 
+  it('should throw when range arguments are invalid.', function () {
+    (function() {range('0a', '0z'); }).should.throw('fill-range: invalid range arguments.');
+    (function() {range('!', '$'); }).should.throw('fill-range: invalid range arguments.');
+  });
+
   it('should throw when args are incompatible.', function () {
     (function() {
       range('a', 10);
@@ -119,10 +124,14 @@ describe('steps: letters', function () {
 describe('padding: numbers', function () {
   it('should pad numbers:', function () {
     range('01', '03').should.eql(['01', '02', '03']);
-    range('0001', '0003').should.eql(['0001', '0002', '0003'])
+    range('0001', '0003').should.eql(['0001', '0002', '0003']);
+    range('-10', '00').should.eql(['-10', '-09', '-08', '-07', '-06', '-05', '-04', '-03', '-02', '-01', '000']);
+    range('05', '100').should.eql(['005','006','007','008','009','010','011','012','013','014','015','016','017','018','019','020','021','022','023','024','025','026','027','028','029','030','031','032','033','034','035','036','037','038','039','040','041','042','043','044','045','046','047','048','049','050','051','052','053','054','055','056','057','058','059','060','061','062','063','064','065','066','067','068','069','070','071','072','073','074','075','076','077','078','079','080','081','082','083','084','085','086','087','088','089','090','091','092','093','094','095','096','097','098','099','100']);
+    range('1', '05').should.eql(['01','02','03','04','05']);
   });
 
   it('should pad numbers when a step is passed:', function () {
+    range('1', '05', '3').should.eql(['01','04']);
     range('02', '10', 2).should.eql(['02', '04', '06', '08', '10']);
     range('002', '10', 2).should.eql(['002', '004', '006', '008', '010']);
     range('002', '010', 2).should.eql(['002', '004', '006', '008', '010']);
@@ -141,6 +150,11 @@ describe('special cases', function () {
 });
 
 describe('special characters:', function () {
+  it('should repeat the first arg `n` times:', function () {
+    range('a', 3, '+').should.eql(['a', 'a', 'a']);
+    range('abc', 2, '+').should.eql(['abc', 'abc']);
+  });
+
   it('should collapse values when `>` is passed:', function () {
     range('a', 'e', '>').should.eql(['abcde']);
     range('A', 'E', '>').should.eql(['ABCDE']);
