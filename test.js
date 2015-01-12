@@ -176,6 +176,7 @@ describe('special characters:', function () {
     range('a', 'c', '|').should.eql(['(a|b|c)']);
     range('a', 'e', '2|').should.eql(['(a|c|e)']);
     range('a', 'e', '|2').should.eql(['(a|c|e)']);
+    range('a', 'z', '|5').should.eql(['(a|f|k|p|u|z)']);
   });
 });
 
