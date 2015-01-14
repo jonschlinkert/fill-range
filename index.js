@@ -65,7 +65,6 @@ function fillRange(a, b, step, fn) {
       step = step.substr(0, i) + step.substr(i + 1);
       expand = true;
       sep = '|';
-
     }
 
     if (!match && !isNumber(step)) {
@@ -214,7 +213,7 @@ function isPadded(origA, origB) {
 function join(arr, sep) {
   var res = arr.join(sep);
   if (sep === '|') {
-    res = '(' + res + ')';
+    res = '(?:' + res + ')';
   }
   return [res];
 }
