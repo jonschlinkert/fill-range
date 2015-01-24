@@ -162,6 +162,8 @@ function fillRange(a, b, step, fn) {
     }
   }
 
+  // handle regex character classes, ranges
+  // or logical `or`, now that the array is expanded
   if (sep === '~') { sep = '-'; }
   if (regex) {
     if (a < 0 || b < 0) { return arr; }
