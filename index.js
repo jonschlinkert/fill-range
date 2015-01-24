@@ -38,7 +38,7 @@ function fillRange(a, b, step, fn) {
     step = null;
   }
 
-  var expand, sep = '';
+  var expand, regex = false, sep = '';
 
   // store a ref to unmodified arg
   var origA = a;
@@ -52,20 +52,34 @@ function fillRange(a, b, step, fn) {
     if (match) {
       var i = match.index;
 
+      // repeat string
       if (match[0] === '+') {
         return repeat(a, b);
 
+      // randomize a, `b` times
       } else if (match[0] === '?') {
         return [randomize(a, b)];
 
+      // expand right, no regex reduction
       } else if (match[0] === '>') {
         step = step.substr(0, i) + step.substr(i + 1);
         expand = true;
 
+      // expand to an array, or if valid create a reduced
+      // string for a regex logic `or`
       } else if (match[0] === '|') {
         step = step.substr(0, i) + step.substr(i + 1);
         expand = true;
-        sep = '|';
+        regex = true;
+        sep = match[0];
+
+      // expand to an array, or if valid create a reduced
+      // string for a regex range
+      } else if (match[0] === '~') {
+        step = step.substr(0, i) + step.substr(i + 1);
+        expand = true;
+        regex = true;
+        sep = match[0];
       }
     } else if (!isNumber(step)) {
       throw new TypeError('fill-range: invalid step.');
@@ -88,9 +102,8 @@ function fillRange(a, b, step, fn) {
   // by this point both are the same, so we
   // can use A to check going forward.
   var isNum = isNumA;
-
   var num = step && isNumber(step)
-    ? Math.abs(step)
+    ? Math.abs(+step)
     : 1;
 
   // is the range alphabetical? or numeric?
@@ -105,12 +118,17 @@ function fillRange(a, b, step, fn) {
   }
 
   // is the pattern positive or negative?
-  var isNegative = b < a;
+  var isNegative = a >= b;
 
   // detect padding
   var padding = isPadded(origA, origB);
   var res, pad, arr = [];
   var ii = 0;
+
+  // character classes, ranges and logical `or`
+  if (regex && !padding && num === 1 && a < b) {
+    return wrap([origA, origB], '-');
+  }
 
   while (isNegative ? (a >= b) : (a <= b)) {
     if (padding && isNum) {
@@ -145,7 +163,37 @@ function fillRange(a, b, step, fn) {
     }
   }
 
-  return expand ? join(arr, sep) : arr;
+  if (sep === '~') { sep = '-'; }
+  if (regex) {
+    if (a < 0 || b < 0) { return arr; }
+    var len = arr.length;
+    if (isNegative) {
+      return wrap(arr, '|');
+    }
+    if (num === 1 && len === 2) {
+      return wrap(arr, '|');
+    }
+    if (num > 1 /* step */) {
+      return wrap(arr, '|');
+    }
+  }
+
+  return expand ? wrap(arr, sep) : arr;
+}
+
+/**
+ * Step regex
+ */
+
+function wrap(str, sep) {
+  str = str.join(sep);
+  if (sep === '|') {
+    str = '(' + str + ')';
+  }
+  if (sep === '-') {
+    str = '[' + str + ']';
+  }
+  return [str];
 }
 
 /**
@@ -153,7 +201,7 @@ function fillRange(a, b, step, fn) {
  */
 
 function stepRe() {
-  return /\?|>|\||\+/g;
+  return /\?|>|\||\+|\~/g;
 }
 
 /**
@@ -212,18 +260,6 @@ function isPadded(origA, origB) {
     };
   }
   return false;
-}
-
-/**
- * Join `arr` with the given `sep`
- */
-
-function join(arr, sep) {
-  var res = arr.join(sep);
-  if (sep === '|') {
-    res = '(?:' + res + ')';
-  }
-  return [res];
 }
 
 /**
