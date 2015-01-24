@@ -1,7 +1,7 @@
 {
   "name": "fill-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": {
     "name": "Jon Schlinkert",
@@ -22,16 +22,16 @@
   "engines": {
     "node": ">=0.10.0"
   },
+  "files": [
+    "index.js"
+  ],
   "scripts": {
-    "test": "mocha -R spec",
-    "docs": "update && license && npmignore && deps && verb",
-    "all": "npm run test && npm run docs"
+    "test": "mocha -R spec"
   },
   "dependencies": {
-    "is-number": "^0.1.1",
+    "is-number": "^1.1.0",
     "randomatic": "^1.0.1",
-    "repeat-element": "^1.0.0",
-    "repeat-string": "^1.2.0"
+    "repeat-element": "^1.0.0"
   },
   "devDependencies": {
     "benchmarked": "^0.1.3",
