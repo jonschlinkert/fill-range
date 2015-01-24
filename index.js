@@ -34,8 +34,7 @@ function fillRange(a, b, step, fn) {
   }
 
   if (typeof step === 'function') {
-    fn = step;
-    step = null;
+    fn = step; step = null;
   }
 
   var expand, regex = false, sep = '';
@@ -102,13 +101,13 @@ function fillRange(a, b, step, fn) {
   // by this point both are the same, so we
   // can use A to check going forward.
   var isNum = isNumA;
-  var num = step && isNumber(step)
+  var num = step && isNumber(step) && step !== 0 && step !== '0'
     ? Math.abs(+step)
     : 1;
 
   // is the range alphabetical? or numeric?
   if (isNum) {
-    // if numeric coerce to an integer
+    // if numericm coerce to an integer
     a = +a;
     b = +b;
   } else {

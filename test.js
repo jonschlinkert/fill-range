@@ -142,6 +142,8 @@ describe('padding: numbers', function () {
 describe('special cases', function () {
   it('should convert `-0` to `0`:', function () {
     range('-5', '-0', '-1').should.eql(['-5', '-4', '-3', '-2', '-1', '0']);
+    range('1', '-0', '2').should.eql(['1']);
+    range('1', '-0', '0').should.eql(['1', '0']);
   });
 
   it('should adjust padding for negative numbers:', function () {
