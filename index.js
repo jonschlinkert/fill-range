@@ -49,30 +49,31 @@ function fillRange(a, b, step, fn) {
   // handle special step characters
   if (typeof step === 'string') {
     var match = stepRe().exec(step);
-    var i = match && match.index;
+    if (match) {
+      var i = match.index;
 
-    if (match && match[0] === '+') {
-      return repeat(a, b);
+      if (match[0] === '+') {
+        return repeat(a, b);
 
-    } else if (match && match[0] === '?') {
-      return [randomize(a, b)];
+      } else if (match[0] === '?') {
+        return [randomize(a, b)];
 
-    } else if (match && match[0] === '>') {
-      step = step.substr(0, i) + step.substr(i + 1);
-      expand = true;
+      } else if (match[0] === '>') {
+        step = step.substr(0, i) + step.substr(i + 1);
+        expand = true;
 
-    } else if (match && match[0] === '|') {
-      step = step.substr(0, i) + step.substr(i + 1);
-      expand = true;
-      sep = '|';
-    }
-
-    if (!match && !isNumber(step)) {
+      } else if (match[0] === '|') {
+        step = step.substr(0, i) + step.substr(i + 1);
+        expand = true;
+        sep = '|';
+      }
+    } else if (!isNumber(step)) {
       throw new TypeError('fill-range: invalid step.');
     }
   }
 
-  if (!hasEither(a) || !hasEither(b) || hasBoth(a) || hasBoth(b)) {
+  // has neither a letter nor number, or has both letters and numbers
+  if (!noAlphaNum(a) || !noAlphaNum(b) || hasBoth(a) || hasBoth(b)) {
     throw new Error('fill-range: invalid range arguments.');
   }
 
@@ -84,17 +85,24 @@ function fillRange(a, b, step, fn) {
     throw new TypeError('fill-range: first range argument is incompatible with second.');
   }
 
+  // by this point both are the same, so we
+  // can use A to check going forward.
+  var isNum = isNumA;
+
   var num = step && isNumber(step)
     ? Math.abs(step)
     : 1;
 
   // is the range alphabetical? or numeric?
-  var isNum = isNumber(a);
-
-  // if numeric coerce to an integer, otherwise
-  // get the charCode to expand alpha ranges
-  a = isNum ? +a : a.charCodeAt(0);
-  b = isNum ? +b : b.charCodeAt(0);
+  if (isNum) {
+    // if numeric coerce to an integer
+    a = +a;
+    b = +b;
+  } else {
+    // otherwise, get the charCode to expand alpha ranges
+    a = a.charCodeAt(0);
+    b = b.charCodeAt(0);
+  }
 
   // is the pattern positive or negative?
   var isNegative = b < a;
@@ -153,7 +161,7 @@ function stepRe() {
  * or a number
  */
 
-function hasEither(val) {
+function noAlphaNum(val) {
   return /[a-z0-9]/i.test(val);
 }
 
@@ -171,7 +179,7 @@ function hasBoth(val) {
  */
 
 function zeros(val) {
-  if (/^-*0+$/.test(val)) {
+  if (/^-*0+$/.test(val.toString())) {
     return '0';
   }
   return val;
