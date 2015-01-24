@@ -172,11 +172,28 @@ describe('special characters:', function () {
     range('aA0', 10, '?').should.match(/[^\W]{10}/);
   });
 
-  it('should join the array using `|` as the separator:', function () {
-    range('a', 'c', '|').should.eql(['(?:a|b|c)']);
-    range('a', 'e', '2|').should.eql(['(?:a|c|e)']);
-    range('a', 'e', '|2').should.eql(['(?:a|c|e)']);
-    range('a', 'z', '|5').should.eql(['(?:a|f|k|p|u|z)']);
+  it('should create a string to be used as a regex logical `or`:', function () {
+    range('c', 'a', '|').should.eql(['(c|b|a)']);
+    range('z', 'a', '|5').should.eql(['(z|u|p|k|f|a)']);
+    range('a', 'e', '2|').should.eql(['(a|c|e)']);
+    range('a', 'e', '|2').should.eql(['(a|c|e)']);
+    range('a', 'z', '|5').should.eql(['(a|f|k|p|u|z)']);
+  });
+
+  it('should create a string to be used as a regex range:', function () {
+    range('a', 'c', '|').should.eql(['[a-c]']);
+    range('a', 'z', '1|').should.eql(['[a-z]']);
+    range('a', 'c', '~').should.eql(['[a-c]']);
+    range('0', '9', '~').should.eql(['[0-9]']);
+    range('5', '1', '|').should.eql(['(5|4|3|2|1)']);
+    range('3', '1', '|1').should.eql(['(3|2|1)']);
+    range('1', '3', '|1').should.eql(['[1-3]']);
+    range('5', '1', '~').should.eql(['(5|4|3|2|1)']);
+  });
+
+  it('should not create a regex range when the characters are out of order:', function () {
+    range('a', 'e', '~2').should.eql(['(a|c|e)']);
+    range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
   });
 });
 
