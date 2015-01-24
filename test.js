@@ -97,20 +97,15 @@ describe('steps: numbers', function () {
   it('should fill in negative ranges using the given step', function () {
     range('-1', '-10', '-2').should.eql(['-1', '-3', '-5', '-7', '-9']);
     range('-1', '-10', '2').should.eql(['-1', '-3', '-5', '-7', '-9']);
+    range('1', '10', '2').should.eql(['1', '3', '5', '7', '9']);
+    range('1', '20', '2').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
+    range('1', '20', '20').should.eql(['1']);
     range('10', '1', '-2').should.eql(['10', '8', '6', '4', '2']);
     range(-10, -2, 2).should.eql(['-10', '-8', '-6', '-4', '-2']);
     range(-2, -10, 1).should.eql(['-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-10']);
     range(-2, -10, 2).should.eql(['-2', '-4', '-6', '-8', '-10']);
     range(-2, -10, 3).should.eql(['-2', '-5', '-8']);
     range(-9, 9, 3).should.eql(['-9', '-6', '-3', '0', '3', '6', '9']);
-  });
-
-  it('should fill in negative ranges using the given step', function () {
-    range('1', '10', '2').should.eql(['1', '3', '5', '7', '9']);
-    range('-1', '-10', '2').should.eql(['-1', '-3', '-5', '-7', '-9']);
-    range('-1', '-10', '-2').should.eql(['-1', '-3', '-5', '-7', '-9']);
-    range('1', '20', '2').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
-    range('1', '20', '20').should.eql(['1']);
   });
 });
 
@@ -127,7 +122,6 @@ describe('padding: numbers', function () {
     range('0001', '0003').should.eql(['0001', '0002', '0003']);
     range('-10', '00').should.eql(['-10', '-09', '-08', '-07', '-06', '-05', '-04', '-03', '-02', '-01', '000']);
     range('05', '100').should.eql(['005','006','007','008','009','010','011','012','013','014','015','016','017','018','019','020','021','022','023','024','025','026','027','028','029','030','031','032','033','034','035','036','037','038','039','040','041','042','043','044','045','046','047','048','049','050','051','052','053','054','055','056','057','058','059','060','061','062','063','064','065','066','067','068','069','070','071','072','073','074','075','076','077','078','079','080','081','082','083','084','085','086','087','088','089','090','091','092','093','094','095','096','097','098','099','100']);
-    range('1', '05').should.eql(['01','02','03','04','05']);
   });
 
   it('should pad numbers when a step is passed:', function () {
@@ -162,6 +156,10 @@ describe('special characters:', function () {
     range('A', 'E', '>').should.eql(['ABCDE']);
     range('E', 'A', '>').should.eql(['EDCBA']);
     range('5', '8', '>').should.eql(['5678']);
+  });
+
+  it('should use steps with collapsed values:', function () {
+    range('A', 'Z', '>5').should.eql(['AFKPUZ']);
     range('2', '20', '2>').should.eql(['2468101214161820']);
     range('2', '20', '>2').should.eql(['2468101214161820']);
   });
@@ -182,9 +180,20 @@ describe('special characters:', function () {
     range('a', 'z', '|5').should.eql(['(a|f|k|p|u|z)']);
   });
 
+  it('should respect padding when special chars are used:', function () {
+    range('05', '100', '10~').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
+  });
+
   it('should create a string to be used as a regex range:', function () {
     range('a', 'c', '|').should.eql(['[a-c]']);
+    range('a', 'e', '|0').should.eql(['[a-e]']);
+    range('a', 'e', '|1').should.eql(['[a-e]']);
+    range('a', 'e', '0|').should.eql(['[a-e]']);
     range('a', 'z', '1|').should.eql(['[a-z]']);
+    range('a', 'z', '1~').should.eql(['[a-z]']);
+    range('a', 'z', '2~').should.eql(['(a|c|e|g|i|k|m|o|q|s|u|w|y)']);
+    range('a', 'e', '~0').should.eql(['[a-e]']);
+    range('a', 'e', '~1').should.eql(['[a-e]']);
     range('a', 'c', '~').should.eql(['[a-c]']);
     range('0', '9', '~').should.eql(['[0-9]']);
     range('5', '1', '|').should.eql(['(5|4|3|2|1)']);
