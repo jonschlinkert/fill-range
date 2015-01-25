@@ -7,6 +7,7 @@
 
 'use strict';
 
+var isObject = require('isobject');
 var isNumber = require('is-number');
 var randomize = require('randomatic');
 var repeatStr = require('repeat-string');
@@ -28,57 +29,68 @@ module.exports = fillRange;
  * @return {Array}
  */
 
-function fillRange(a, b, step, fn) {
+function fillRange(a, b, step, options, fn) {
   if (a == null || b == null) {
     throw new Error('fill-range expects the first and second args to be strings.');
   }
 
   if (typeof step === 'function') {
-    fn = step; step = null;
+    fn = step; options = {}; step = null;
+  }
+
+  if (typeof options === 'function') {
+    fn = options; options = {};
+  }
+
+  if (isObject(step)) {
+    options = step; step = '';
   }
 
   var expand, regex = false, sep = '';
+  var opts = options || {};
+  step = step || opts.step;
 
   // store a ref to unmodified arg
-  var origA = a;
-  var origB = b;
+  var origA = a, origB = b;
 
   b = (b.toString() === '-0') ? 0 : b;
 
   // handle special step characters
   if (typeof step === 'string') {
     var match = stepRe().exec(step);
+
     if (match) {
       var i = match.index;
+      var m = match[0];
 
       // repeat string
-      if (match[0] === '+') {
+      if (m === '+') {
         return repeat(a, b);
 
       // randomize a, `b` times
-      } else if (match[0] === '?') {
+      } else if (m === '?') {
         return [randomize(a, b)];
 
       // expand right, no regex reduction
-      } else if (match[0] === '>') {
+      } else if (m === '>') {
         step = step.substr(0, i) + step.substr(i + 1);
         expand = true;
 
       // expand to an array, or if valid create a reduced
       // string for a regex logic `or`
-      } else if (match[0] === '|') {
+      } else if (m === '|') {
         step = step.substr(0, i) + step.substr(i + 1);
         expand = true;
         regex = true;
-        sep = match[0];
+        sep = m;
 
       // expand to an array, or if valid create a reduced
       // string for a regex range
-      } else if (match[0] === '~') {
+      } else if (m === '~') {
         step = step.substr(0, i) + step.substr(i + 1);
         expand = true;
         regex = true;
-        sep = match[0];
+        sep = m;
       }
     } else if (!isNumber(step)) {
       throw new TypeError('fill-range: invalid step.');
