@@ -116,6 +116,20 @@ describe('steps: letters', function () {
   });
 });
 
+describe('options: step', function () {
+  it('should use the step defined on the options:', function () {
+    var opts = { step: 2 };
+    range('a', 'e', opts).should.eql(['a','c', 'e']);
+    range('E', 'A', opts).should.eql(['E', 'C', 'A']);
+  });
+
+  it('should use the step defined on the options:', function () {
+    var opts = { step: '~' };
+    range('a', 'e', opts).should.eql(['[a-e]']);
+    range('E', 'A', opts).should.eql(['(E|D|C|B|A)']);
+  });
+});
+
 describe('padding: numbers', function () {
   it('should pad numbers:', function () {
     range('01', '03').should.eql(['01', '02', '03']);
