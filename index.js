@@ -106,7 +106,7 @@ function fillRange(a, b, step, options, fn) {
 
   // has neither a letter nor number, or has both letters and numbers
   if (!noAlphaNum(a) || !noAlphaNum(b) || hasBoth(a) || hasBoth(b)) {
-    throw new Error('fill-range: invalid range arguments.');
+    throw new RangeError('fill-range: invalid range arguments.');
   }
 
   // validate arguments
@@ -119,7 +119,7 @@ function fillRange(a, b, step, options, fn) {
 
   // by this point both are the same, so we
   // can use A to check going forward.
-  var isNum = isNumA;
+  var isNum = !!isNumA;
   var num = formatStep(step);
 
   // is the range alphabetical? or numeric?
@@ -133,16 +133,21 @@ function fillRange(a, b, step, options, fn) {
   }
 
   // is the pattern positive or negative?
-  var isNegative = a >= b;
+  var isNegative = a > b;
 
   // detect padding
   var padding = isPadded(origA, origB);
   var res, pad, arr = [];
   var ii = 0;
 
+  // make sure the correct separator is used
+  if (regex && sep === '|' || sep === '~') {
+    sep = detectSeparator(a, b, num, isNum, isNegative);
+  }
+
   // character classes, ranges and logical `or`
   if (regex && !padding && num === 1 && a < b) {
-    return wrap([origA, origB], '-');
+    return wrap([origA, origB], sep);
   }
 
   while (isNegative ? (a >= b) : (a <= b)) {
@@ -178,14 +183,15 @@ function fillRange(a, b, step, options, fn) {
     }
   }
 
-  // handle regex character classes, ranges
-  // or logical `or`, now that the array is expanded
-  if (regex) {
-    if (a < 0 || b < 0) { return arr; }
-    return wrap(arr, '|')
+  // now that the array is expanded, we need to handle regex
+  // character classes, ranges or logical `or` that wasn't
+  // already handled before the loop
+  if (regex || expand) {
+    if (arr.length === 1 || a < 0 || b < 0) { return arr; }
+    return wrap(arr, sep);
   }
 
-  return expand ? wrap(arr, sep) : arr;
+  return arr;
 }
 
 /**
@@ -193,9 +199,9 @@ function fillRange(a, b, step, options, fn) {
  * on the given `sep`
  */
 
-function wrap(str, sep) {
+function wrap(arr, sep) {
   if (sep === '~') { sep = '-'; }
-  str = str.join(sep);
+  var str = arr.join(sep);
 
   if (sep === '|') {
     str = '(' + str + ')';
@@ -204,6 +210,29 @@ function wrap(str, sep) {
     str = '[' + str + ']';
   }
   return [str];
+}
+
+/**
+ * Check for invalid characters
+ */
+
+function isCharClass(a, b, step, isNum, isNegative) {
+  if (isNegative) { return false; }
+  if (isNum) { return a < 9 && b < 9; }
+  return a < b && step === 1;
+}
+
+/**
+ * Detect the correct separator to use
+ */
+
+function detectSeparator(a, b, step, isNum, isNegative) {
+  var isChar = isCharClass(a, b, step, isNum, isNegative);
+  if (!isChar) {
+    return '|';
+  } else {
+    return '~';
+  }
 }
 
 /**
@@ -231,7 +260,7 @@ function formatPadding(ch, pad) {
  */
 
 function isInvalidChar(str) {
-  var ch = String.fromCharCode(str);
+  var ch = toStr(str);
   return ch === '\\'
     || ch === '['
     || ch === ']'
@@ -240,6 +269,15 @@ function isInvalidChar(str) {
     || ch === ')'
     || ch === '`';
 }
+
+/**
+ * Convert to a string from a charCode
+ */
+
+function toStr(ch) {
+  return String.fromCharCode(ch);
+}
+
 
 /**
  * Step regex
