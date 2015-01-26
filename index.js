@@ -120,15 +120,12 @@ function fillRange(a, b, step, options, fn) {
   // by this point both are the same, so we
   // can use A to check going forward.
   var isNum = isNumA;
-  var num = step && isNumber(step) && step !== 0 && step !== '0'
-    ? Math.abs(+step)
-    : 1;
+  var num = formatStep(step);
 
   // is the range alphabetical? or numeric?
   if (isNum) {
-    // if numericm coerce to an integer
-    a = +a;
-    b = +b;
+    // if numeric, coerce to an integer
+    a = +a; b = +b;
   } else {
     // otherwise, get the charCode to expand alpha ranges
     a = a.charCodeAt(0);
@@ -159,19 +156,19 @@ function fillRange(a, b, step, options, fn) {
 
     // letters
     } else if (!isNum) {
-      res = String.fromCharCode(a);
+      if (regex && isInvalidChar(a)) {
+        res = null;
+      } else {
+        res = String.fromCharCode(a);
+      }
 
     // numbers
     } else {
-      var result = pad ? pad + a : a;
-      if (pad && a.toString()[0] === '-') {
-        result = '-' + pad + a.toString().slice(1);
-      }
-      res = result.toString();
+      res = formatPadding(a, pad);
     }
 
-    // add result to the array
-    arr.push(res);
+    // add result to the array, filtering any nulled values
+    if (res !== null) arr.push(res);
 
     // increment or decrement
     if (isNegative) {
@@ -183,31 +180,23 @@ function fillRange(a, b, step, options, fn) {
 
   // handle regex character classes, ranges
   // or logical `or`, now that the array is expanded
-  if (sep === '~') { sep = '-'; }
-
   if (regex) {
     if (a < 0 || b < 0) { return arr; }
-    var len = arr.length;
-    if (isNegative) {
-      return wrap(arr, '|');
-    }
-    if (num === 1 && len === 2) {
-      return wrap(arr, '|');
-    }
-    if (num > 1 /* step */) {
-      return wrap(arr, '|');
-    }
+    return wrap(arr, '|')
   }
 
   return expand ? wrap(arr, sep) : arr;
 }
 
 /**
- * Step regex
+ * Wrap the string with delims based
+ * on the given `sep`
  */
 
 function wrap(str, sep) {
+  if (sep === '~') { sep = '-'; }
   str = str.join(sep);
+
   if (sep === '|') {
     str = '(' + str + ')';
   }
@@ -215,6 +204,46 @@ function wrap(str, sep) {
     str = '[' + str + ']';
   }
   return [str];
+}
+
+/**
+ * Correctly format the step based on type
+ */
+
+function formatStep(step) {
+  return step
+    && isNumber(step)
+    && step !== 0
+    && step !== '0'
+      ? Math.abs(+step)
+      : 1;
+}
+
+/**
+ * Format padding, taking leading `-` into account
+ */
+
+function formatPadding(ch, pad) {
+  var res = pad ? pad + ch : ch;
+  if (pad && ch.toString().charAt(0) === '-') {
+    res = '-' + pad + ch.toString().substr(1);
+  }
+  return res.toString();
+}
+
+/**
+ * Check for invalid characters
+ */
+
+function isInvalidChar(str) {
+  var ch = String.fromCharCode(str);
+  return ch === '\\'
+    || ch === '['
+    || ch === ']'
+    || ch === '^'
+    || ch === '('
+    || ch === ')'
+    || ch === '`';
 }
 
 /**
@@ -264,8 +293,8 @@ function hasZeros(val) {
 }
 
 /**
- * Test for padding. Returns the actual padding string
- * or `false` if no padding.
+ * If the string is padded, returns a curried function with
+ * the a cached padding string, or `false` if no padding.
  *
  * @param  {*} `origA` String or number.
  * @return {String|Boolean}
@@ -273,9 +302,9 @@ function hasZeros(val) {
 
 function isPadded(origA, origB) {
   if (hasZeros(origA) || hasZeros(origB)) {
-    var alen = length(origA);
-    var blen = length(origB);
+    var alen = length(origA), blen = length(origB);
     var len = alen >= blen ? alen : blen;
+
     return function (a) {
       return repeatStr('0', len - length(a));
     };
