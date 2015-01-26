@@ -211,12 +211,7 @@ function wrap(str, sep) {
  */
 
 function formatStep(step) {
-  return step
-    && isNumber(step)
-    && step !== 0
-    && step !== '0'
-      ? Math.abs(+step)
-      : 1;
+  return Math.abs(step >> 0) || 1;
 }
 
 /**
