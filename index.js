@@ -48,6 +48,8 @@ function fillRange(a, b, step, options, fn) {
 
   var expand, regex = false, sep = '';
   var opts = options || {};
+
+  var noexpand = opts.noexpand;
   step = step || opts.step;
 
   // store a ref to unmodified arg
@@ -119,7 +121,7 @@ function fillRange(a, b, step, options, fn) {
 
   // by this point both are the same, so we
   // can use A to check going forward.
-  var isNum = !!isNumA;
+  var isNum = isNumA;
   var num = formatStep(step);
 
   // is the range alphabetical? or numeric?
@@ -140,14 +142,15 @@ function fillRange(a, b, step, options, fn) {
   var res, pad, arr = [];
   var ii = 0;
 
-  // make sure the correct separator is used
-  if (regex && sep === '|' || sep === '~') {
-    sep = detectSeparator(a, b, num, isNum, isNegative);
-  }
-
   // character classes, ranges and logical `or`
-  if (regex && !padding && num === 1 && a < b) {
-    return wrap([origA, origB], sep);
+  if (regex) {
+    if (shouldExpand(a, b, num, isNum, padding, opts)) {
+      // make sure the correct separator is used
+      if (sep === '|' || sep === '~') {
+        sep = detectSeparator(a, b, num, isNum, isNegative);
+      }
+      return wrap([origA, origB], sep, opts);
+    }
   }
 
   while (isNegative ? (a >= b) : (a <= b)) {
@@ -186,9 +189,13 @@ function fillRange(a, b, step, options, fn) {
   // now that the array is expanded, we need to handle regex
   // character classes, ranges or logical `or` that wasn't
   // already handled before the loop
-  if (regex || expand) {
+  if ((regex || expand) && !noexpand) {
+    // make sure the correct separator is used
+    if (sep === '|' || sep === '~') {
+      sep = detectSeparator(a, b, num, isNum, isNegative);
+    }
     if (arr.length === 1 || a < 0 || b < 0) { return arr; }
-    return wrap(arr, sep);
+    return wrap(arr, sep, opts);
   }
 
   return arr;
@@ -199,11 +206,14 @@ function fillRange(a, b, step, options, fn) {
  * on the given `sep`
  */
 
-function wrap(arr, sep) {
+function wrap(arr, sep, opts) {
   if (sep === '~') { sep = '-'; }
   var str = arr.join(sep);
 
   if (sep === '|') {
+    if (opts.prefix) {
+      str = opts.prefix + str;
+    }
     str = '(' + str + ')';
   }
   if (sep === '-') {
@@ -218,8 +228,18 @@ function wrap(arr, sep) {
 
 function isCharClass(a, b, step, isNum, isNegative) {
   if (isNegative) { return false; }
-  if (isNum) { return a < 9 && b < 9; }
-  return a < b && step === 1;
+  if (isNum) { return a <= 9 && b <= 9; }
+  if (a < b) { return step === 1; }
+  return false;
+}
+
+/**
+ * Detect the correct separator to use
+ */
+
+function shouldExpand(a, b, num, isNum, padding, opts) {
+  if (isNum && (a > 9 || b > 9)) { return false; }
+  return !padding && num === 1 && a < b;
 }
 
 /**
@@ -230,9 +250,8 @@ function detectSeparator(a, b, step, isNum, isNegative) {
   var isChar = isCharClass(a, b, step, isNum, isNegative);
   if (!isChar) {
     return '|';
-  } else {
-    return '~';
   }
+  return '~';
 }
 
 /**
