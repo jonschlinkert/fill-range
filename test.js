@@ -228,48 +228,72 @@ describe('special characters:', function () {
       range('a', 'e', '|0').should.eql(['[a-e]']);
     });
 
-    it('should determine the correct syntax to avoid creating out-of-order ranges:', function () {
+  });
+});
+
+describe('syntax detection:', function () {
+  describe('should determine the correct syntax to avoid creating out-of-order ranges:', function () {
+    it('should create valid character classes for numbers:', function () {
       range(1, 3, '~').should.eql(['[1-3]']);
       range(1, 3, '~1').should.eql(['[1-3]']);
       range(1, 3, '|').should.eql(['[1-3]']);
       range(1, 3, '|1').should.eql(['[1-3]']);
 
-      range('10', '11', '~').should.eql(['(10|11)']);
-      range('10', '11', '|').should.eql(['(10|11)']);
-      range('11', '10', '~').should.eql(['(11|10)']);
-      range('11', '10', '|').should.eql(['(11|10)']);
-      range(10, 30, '|').should.eql(['(10|30)']);
-      range(10, 30, '~').should.eql(['(10|30)']);
-      range(9, 9, '|').should.eql(['9']);
-
-      range('1', '3', '~').should.eql(['[1-3]']);
       range('1', '3', '|').should.eql(['[1-3]']);
-      range('a', 'c', '~').should.eql(['[a-c]']);
-      range('a', 'c', '|').should.eql(['[a-c]']);
-
-      range('a', 'C', '|').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
-      range('a', 'C', '~').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
-
-      range('c', 'a', '|').should.eql(['(c|b|a)']);
-      range('c', 'a', '~').should.eql(['(c|b|a)']);
-
-      range('a', 'z', '~').should.eql(['[a-z]']);
-      range('a', 'z', '|').should.eql(['[a-z]']);
-
       range('1', '3', '|1').should.eql(['[1-3]']);
+      range('1', '3', '~').should.eql(['[1-3]']);
       range('1', '3', '~1').should.eql(['[1-3]']);
 
+      range('0', '9', '|').should.eql(['[0-9]']);
+      range('0', '9', '~').should.eql(['[0-9]']);
+    });
+
+    it('should create valid logical `or`s for descending numbers:', function () {
       range('5', '1', '|').should.eql(['(5|4|3|2|1)']);
       range('5', '1', '~').should.eql(['(5|4|3|2|1)']);
       range('3', '1', '~1').should.eql(['(3|2|1)']);
       range('3', '1', '~|').should.eql(['(3|2|1)']);
+    });
+
+    it('should create valid character classes for letters:', function () {
+      range('a', 'c', '~').should.eql(['[a-c]']);
+      range('a', 'c', '|').should.eql(['[a-c]']);
+      range('a', 'z', '~').should.eql(['[a-z]']);
+      range('a', 'z', '|').should.eql(['[a-z]']);
+    });
+
+    it('should create valid logical `or`s for numbers:', function () {
+      range('1', '10', '~').should.eql(['(1|2|3|4|5|6|7|8|9|10)']);
+      range('10', '11', '~').should.eql(['(10|11)']);
+      range('10', '11', '|').should.eql(['(10|11)']);
+      range('11', '10', '~').should.eql(['(11|10)']);
+      range('11', '10', '|').should.eql(['(11|10)']);
+      range(10, 20, '|').should.eql(['(10|11|12|13|14|15|16|17|18|19|20)']);
+      range(10, 20, '~').should.eql(['(10|11|12|13|14|15|16|17|18|19|20)']);
+      range(9, 9, '|').should.eql(['9']);
+    });
+
+    it('should create valid logical `or`s for letters:', function () {
+      range('c', 'a', '|').should.eql(['(c|b|a)']);
+      range('c', 'a', '~').should.eql(['(c|b|a)']);
 
       range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
       range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
 
       range('z', 'a', '5|').should.eql(['(z|u|p|k|f|a)']);
       range('z', 'a', '5~').should.eql(['(z|u|p|k|f|a)']);
+
+      range('a', 'C', '|').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
+      range('a', 'C', '~').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
     });
+  });
+});
+
+describe('logical or prefixes:', function () {
+  it('should add a prefix to a logical or when passed on the options:', function () {
+    range('c', 'a', '|', {prefix: '?:'}).should.eql(['(?:c|b|a)']);
+    range('c', 'a', '~', {prefix: '?:'}).should.eql(['(?:c|b|a)']);
+    range('1', '10', '|', {prefix: '?!'}).should.eql(['(?!1|2|3|4|5|6|7|8|9|10)']);
   });
 });
 
