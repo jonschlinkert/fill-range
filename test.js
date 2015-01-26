@@ -69,6 +69,7 @@ describe('ranges: letters', function () {
   });
 
   it('should decrement alphabetical ranges', function () {
+    range('a', 'C').should.eql(['a','`','_','^',']',"\\",'[','Z','Y','X','W','V','U','T','S','R','Q','P','O','N','M','L','K','J','I','H','G','F','E','D','C']);
     range('E', 'A').should.eql(['E', 'D', 'C', 'B', 'A']);
     range('z', 'm').should.eql(['z', 'y', 'x', 'w', 'v', 'u', 't', 's', 'r', 'q', 'p', 'o', 'n', 'm']);
   });
@@ -122,12 +123,6 @@ describe('options: step', function () {
     range('a', 'e', opts).should.eql(['a','c', 'e']);
     range('E', 'A', opts).should.eql(['E', 'C', 'A']);
   });
-
-  it('should use the step defined on the options:', function () {
-    var opts = { step: '~' };
-    range('a', 'e', opts).should.eql(['[a-e]']);
-    range('E', 'A', opts).should.eql(['(E|D|C|B|A)']);
-  });
 });
 
 describe('padding: numbers', function () {
@@ -160,65 +155,121 @@ describe('special cases', function () {
 });
 
 describe('special characters:', function () {
-  it('should repeat the first arg `n` times:', function () {
-    range('a', 3, '+').should.eql(['a', 'a', 'a']);
-    range('abc', 2, '+').should.eql(['abc', 'abc']);
+  it('should use the step defined on the options:', function () {
+    var opts = { step: '~' };
+    range('a', 'e', opts).should.eql(['[a-e]']);
+    range('E', 'A', opts).should.eql(['(E|D|C|B|A)']);
   });
 
-  it('should collapse values when `>` is passed:', function () {
-    range('a', 'e', '>').should.eql(['abcde']);
-    range('A', 'E', '>').should.eql(['ABCDE']);
-    range('E', 'A', '>').should.eql(['EDCBA']);
-    range('5', '8', '>').should.eql(['5678']);
+  describe('repeat:', function () {
+    it('should repeat the first arg `n` times:', function () {
+      range('a', 3, '+').should.eql(['a', 'a', 'a']);
+      range('abc', 2, '+').should.eql(['abc', 'abc']);
+    });
   });
 
-  it('should use steps with collapsed values:', function () {
-    range('A', 'Z', '>5').should.eql(['AFKPUZ']);
-    range('2', '20', '2>').should.eql(['2468101214161820']);
-    range('2', '20', '>2').should.eql(['2468101214161820']);
+  describe('join:', function () {
+    it('should join values when `>` is passed:', function () {
+      range('a', 'e', '>').should.eql(['abcde']);
+      range('A', 'E', '>').should.eql(['ABCDE']);
+      range('E', 'A', '>').should.eql(['EDCBA']);
+      range('5', '8', '>').should.eql(['5678']);
+    });
+
+    it('should use steps with joined values:', function () {
+      range('A', 'Z', '>5').should.eql(['AFKPUZ']);
+      range('2', '20', '2>').should.eql(['2468101214161820']);
+      range('2', '20', '>2').should.eql(['2468101214161820']);
+    });
   });
 
-  it('should randomize using the first two args when `?` is passed:', function () {
-    range('A0', 5, '?').should.match(/[\w\d]{5}/);
-    range('A0', 5, '?').should.not.match(/[\w\d]{6}/);
-    range('A', 5, '?').should.not.match(/\d{5}/);
-    range('*', 5, '?').should.match(/.{5}/);
-    range('aA0', 10, '?').should.match(/[^\W]{10}/);
+  describe('randomize:', function () {
+    it('should randomize using the first two args when `?` is passed:', function () {
+      range('A0', 5, '?').should.match(/[\w\d]{5}/);
+      range('A0', 5, '?').should.not.match(/[\w\d]{6}/);
+      range('A', 5, '?').should.not.match(/\d{5}/);
+      range('*', 5, '?').should.match(/.{5}/);
+      range('aA0', 10, '?').should.match(/[^\W]{10}/);
+    });
   });
 
-  it('should create a string to be used as a regex logical `or`:', function () {
-    range('c', 'a', '|').should.eql(['(c|b|a)']);
-    range('z', 'a', '|5').should.eql(['(z|u|p|k|f|a)']);
-    range('a', 'e', '2|').should.eql(['(a|c|e)']);
-    range('a', 'e', '|2').should.eql(['(a|c|e)']);
-    range('a', 'z', '|5').should.eql(['(a|f|k|p|u|z)']);
-  });
+  describe('regex string:', function () {
+    it('should respect padding when special chars are used:', function () {
+      range('05', '100', '10').should.eql(['005','015','025','035','045','055','065','075','085','095']);
+      range('05', '100', '10|').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
+      range('05', '100', '|10').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
+      range('05', '100', '10~').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
+    });
 
-  it('should respect padding when special chars are used:', function () {
-    range('05', '100', '10~').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
-  });
+    it('should create a string to be used as a regex logical `or`:', function () {
+      range('c', 'a', '|').should.eql(['(c|b|a)']);
+      range('z', 'a', '|5').should.eql(['(z|u|p|k|f|a)']);
+      range('a', 'e', '2|').should.eql(['(a|c|e)']);
+      range('a', 'e', '|2').should.eql(['(a|c|e)']);
+      range('a', 'z', '|5').should.eql(['(a|f|k|p|u|z)']);
+      range('a', 'C', '|').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
+      range('a', 'C', '~').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
+    });
 
-  it('should create a string to be used as a regex range:', function () {
-    range('a', 'c', '|').should.eql(['[a-c]']);
-    range('a', 'e', '|0').should.eql(['[a-e]']);
-    range('a', 'e', '|1').should.eql(['[a-e]']);
-    range('a', 'e', '0|').should.eql(['[a-e]']);
-    range('a', 'z', '1|').should.eql(['[a-z]']);
-    range('a', 'z', '1~').should.eql(['[a-z]']);
-    range('a', 'z', '2~').should.eql(['(a|c|e|g|i|k|m|o|q|s|u|w|y)']);
-    range('a', 'e', '~0').should.eql(['[a-e]']);
-    range('a', 'e', '~1').should.eql(['[a-e]']);
-    range('a', 'c', '~').should.eql(['[a-c]']);
-    range('0', '9', '~').should.eql(['[0-9]']);
-    range('5', '1', '|').should.eql(['(5|4|3|2|1)']);
-    range('3', '1', '|1').should.eql(['(3|2|1)']);
-    range('1', '3', '|1').should.eql(['[1-3]']);
-    range('5', '1', '~').should.eql(['(5|4|3|2|1)']);
-  });
+    it('should create a string to be used as a regex range:', function () {
+      range('a', 'c', '|').should.eql(['[a-c]']);
+      range('1', '3', '|').should.eql(['[1-3]']);
+    });
 
-  it('should not create a regex range when the characters are out of order:', function () {
-    range('a', 'e', '~2').should.eql(['(a|c|e)']);
-    range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
+    it('should not wrap a single value:', function () {
+      range(1, 1, '~').should.eql(['1']);
+      range('e', 'e', '~').should.eql(['e']);
+    });
+
+    it('when a step is zero it should be coerced to a one:', function () {
+      range('a', 'e', '0').should.eql(['a', 'b', 'c', 'd', 'e']);
+      range('a', 'e', '0|').should.eql(['[a-e]']);
+      range('a', 'e', '~0').should.eql(['[a-e]']);
+      range('a', 'e', '|0').should.eql(['[a-e]']);
+    });
+
+    it('should determine the correct syntax to avoid creating out-of-order ranges:', function () {
+      range(1, 3, '~').should.eql(['[1-3]']);
+      range(1, 3, '~1').should.eql(['[1-3]']);
+      range(1, 3, '|').should.eql(['[1-3]']);
+      range(1, 3, '|1').should.eql(['[1-3]']);
+
+      range('10', '11', '~').should.eql(['(10|11)']);
+      range('10', '11', '|').should.eql(['(10|11)']);
+      range('11', '10', '~').should.eql(['(11|10)']);
+      range('11', '10', '|').should.eql(['(11|10)']);
+      range(10, 30, '|').should.eql(['(10|30)']);
+      range(10, 30, '~').should.eql(['(10|30)']);
+      range(9, 9, '|').should.eql(['9']);
+
+      range('1', '3', '~').should.eql(['[1-3]']);
+      range('1', '3', '|').should.eql(['[1-3]']);
+      range('a', 'c', '~').should.eql(['[a-c]']);
+      range('a', 'c', '|').should.eql(['[a-c]']);
+
+      range('a', 'C', '|').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
+      range('a', 'C', '~').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
+
+      range('c', 'a', '|').should.eql(['(c|b|a)']);
+      range('c', 'a', '~').should.eql(['(c|b|a)']);
+
+      range('a', 'z', '~').should.eql(['[a-z]']);
+      range('a', 'z', '|').should.eql(['[a-z]']);
+
+      range('1', '3', '|1').should.eql(['[1-3]']);
+      range('1', '3', '~1').should.eql(['[1-3]']);
+
+      range('5', '1', '|').should.eql(['(5|4|3|2|1)']);
+      range('5', '1', '~').should.eql(['(5|4|3|2|1)']);
+      range('3', '1', '~1').should.eql(['(3|2|1)']);
+      range('3', '1', '~|').should.eql(['(3|2|1)']);
+
+      range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
+      range('a', 'z', '5~').should.eql(['(a|f|k|p|u|z)']);
+
+      range('z', 'a', '5|').should.eql(['(z|u|p|k|f|a)']);
+      range('z', 'a', '5~').should.eql(['(z|u|p|k|f|a)']);
+    });
   });
 });
 
