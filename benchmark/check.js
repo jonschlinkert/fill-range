@@ -15,7 +15,7 @@ fs.readdirSync(__dirname + '/code').forEach(function (fp) {
 
   fs.readdirSync(__dirname + '/fixtures').forEach(function (fixture) {
     fixture = path.resolve(__dirname, 'fixtures', fixture);
-    if (/\.js$/.test(fixture)) {
+    if (/.*(or|ss)\.js$/.test(fixture)) {
       console.log(chalk.bold(name) + ':', fn.apply(null, require(fixture)));
     }
   });
