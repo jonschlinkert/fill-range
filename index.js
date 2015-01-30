@@ -49,7 +49,10 @@ function fillRange(a, b, step, options, fn) {
   var expand, regex = false, sep = '';
   var opts = options || {};
 
-  var noexpand = opts.noexpand;
+  if (typeof opts.silent === 'undefined') {
+    opts.silent = true;
+  }
+
   step = step || opts.step;
 
   // store a ref to unmodified arg
@@ -58,7 +61,7 @@ function fillRange(a, b, step, options, fn) {
   b = (b.toString() === '-0') ? 0 : b;
 
   if (opts.makeRe) {
-    step = step ? step += '~' : step;
+    step = step ? (step += '~') : step;
     expand = true;
     regex = true;
     sep = '~';
@@ -102,13 +105,27 @@ function fillRange(a, b, step, options, fn) {
         sep = m;
       }
     } else if (!isNumber(step)) {
-      throw new TypeError('fill-range: invalid step.');
+      if (!opts.silent) {
+        throw new TypeError('fill-range: invalid step.');
+      }
+      return null;
     }
   }
 
+  if (/[.&*()[\]^%$#@!]/.test(a) || /[.&*()[\]^%$#@!]/.test(b)) {
+    if (!opts.silent) {
+      throw new RangeError('fill-range: invalid range arguments.');
+    }
+    return null;
+  }
+
   // has neither a letter nor number, or has both letters and numbers
+  // this needs to be after the step logic
   if (!noAlphaNum(a) || !noAlphaNum(b) || hasBoth(a) || hasBoth(b)) {
-    throw new RangeError('fill-range: invalid range arguments.');
+    if (!opts.silent) {
+      throw new RangeError('fill-range: invalid range arguments.');
+    }
+    return null;
   }
 
   // validate arguments
@@ -116,7 +133,10 @@ function fillRange(a, b, step, options, fn) {
   var isNumB = isNumber(zeros(b));
 
   if ((!isNumA && isNumB) || (isNumA && !isNumB)) {
-    throw new TypeError('fill-range: first range argument is incompatible with second.');
+    if (!opts.silent) {
+      throw new TypeError('fill-range: first range argument is incompatible with second.');
+    }
+    return null;
   }
 
   // by this point both are the same, so we
@@ -134,8 +154,14 @@ function fillRange(a, b, step, options, fn) {
     b = b.charCodeAt(0);
   }
 
-  // is the pattern positive or negative?
-  var isNegative = a > b;
+  // is the pattern descending?
+  var isDescending = a > b;
+
+  // don't create a character class if the args are < 0
+  if (a < 0 || b < 0) {
+    expand = false;
+    regex = false;
+  }
 
   // detect padding
   var padding = isPadded(origA, origB);
@@ -147,13 +173,13 @@ function fillRange(a, b, step, options, fn) {
     if (shouldExpand(a, b, num, isNum, padding, opts)) {
       // make sure the correct separator is used
       if (sep === '|' || sep === '~') {
-        sep = detectSeparator(a, b, num, isNum, isNegative);
+        sep = detectSeparator(a, b, num, isNum, isDescending);
       }
       return wrap([origA, origB], sep, opts);
     }
   }
 
-  while (isNegative ? (a >= b) : (a <= b)) {
+  while (isDescending ? (a >= b) : (a <= b)) {
     if (padding && isNum) {
       pad = padding(a);
     }
@@ -179,7 +205,7 @@ function fillRange(a, b, step, options, fn) {
     if (res !== null) arr.push(res);
 
     // increment or decrement
-    if (isNegative) {
+    if (isDescending) {
       a -= num;
     } else {
       a += num;
@@ -189,10 +215,10 @@ function fillRange(a, b, step, options, fn) {
   // now that the array is expanded, we need to handle regex
   // character classes, ranges or logical `or` that wasn't
   // already handled before the loop
-  if ((regex || expand) && !noexpand) {
+  if ((regex || expand) && !opts.noexpand) {
     // make sure the correct separator is used
     if (sep === '|' || sep === '~') {
-      sep = detectSeparator(a, b, num, isNum, isNegative);
+      sep = detectSeparator(a, b, num, isNum, isDescending);
     }
     if (arr.length === 1 || a < 0 || b < 0) { return arr; }
     return wrap(arr, sep, opts);
@@ -202,21 +228,26 @@ function fillRange(a, b, step, options, fn) {
 }
 
 /**
- * Wrap the string with delims based
- * on the given `sep`
+ * Wrap the string with the correct regex
+ * syntax.
  */
 
 function wrap(arr, sep, opts) {
   if (sep === '~') { sep = '-'; }
   var str = arr.join(sep);
+  var pre = opts && opts.regexPrefix;
 
+  // regex logical `or`
   if (sep === '|') {
-    if (opts.prefix) {
-      str = opts.prefix + str;
-    }
+    str = pre ? pre + str : str;
     str = '(' + str + ')';
   }
+
+  // regex character class
   if (sep === '-') {
+    str = (pre && pre === '^')
+      ? pre + str
+      : str;
     str = '[' + str + ']';
   }
   return [str];
@@ -226,8 +257,8 @@ function wrap(arr, sep, opts) {
  * Check for invalid characters
  */
 
-function isCharClass(a, b, step, isNum, isNegative) {
-  if (isNegative) { return false; }
+function isCharClass(a, b, step, isNum, isDescending) {
+  if (isDescending) { return false; }
   if (isNum) { return a <= 9 && b <= 9; }
   if (a < b) { return step === 1; }
   return false;
@@ -246,8 +277,8 @@ function shouldExpand(a, b, num, isNum, padding, opts) {
  * Detect the correct separator to use
  */
 
-function detectSeparator(a, b, step, isNum, isNegative) {
-  var isChar = isCharClass(a, b, step, isNum, isNegative);
+function detectSeparator(a, b, step, isNum, isDescending) {
+  var isChar = isCharClass(a, b, step, isNum, isDescending);
   if (!isChar) {
     return '|';
   }
