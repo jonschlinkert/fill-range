@@ -1,7 +1,7 @@
 {
   "name": "fill-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": {
     "name": "Jon Schlinkert",

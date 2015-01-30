@@ -17,25 +17,35 @@ describe('error handling', function () {
     }).should.throw('fill-range expects the first and second args to be strings.');
   });
 
-  it('should throw when range arguments are invalid.', function () {
-    (function() {range('0a', '0z'); }).should.throw('fill-range: invalid range arguments.');
-    (function() {range('!', '$'); }).should.throw('fill-range: invalid range arguments.');
+  it('should throw when range arguments are invalid and `silent` is false.', function () {
+    (function () {
+      range('0a', '0z', {silent: false});
+    }).should.throw('fill-range: invalid range arguments.');
+    (function () {
+      range('!', '$', {silent: false});
+    }).should.throw('fill-range: invalid range arguments.');
   });
 
   it('should throw when args are incompatible.', function () {
     (function() {
-      range('a', 10);
+      range('a', 10, {silent: false});
     }).should.throw('fill-range: first range argument is incompatible with second.');
 
     (function() {
-      range(1, 'z');
+      range(1, 'z', {silent: false});
     }).should.throw('fill-range: first range argument is incompatible with second.');
   });
 
   it('should throw when the step is bad.', function () {
-    (function() {range('1', '10', 'z'); }).should.throw('fill-range: invalid step.');
-    (function() {range('a', 'z', 'a'); }).should.throw('fill-range: invalid step.');
-    (function() {range('a', 'z', '0a'); }).should.throw('fill-range: invalid step.');
+    (function () {
+      range('1', '10', 'z', {silent: false});
+    }).should.throw('fill-range: invalid step.');
+    (function () {
+      range('a', 'z', 'a', {silent: false});
+    }).should.throw('fill-range: invalid step.');
+    (function () {
+      range('a', 'z', '0a', {silent: false});
+    }).should.throw('fill-range: invalid step.');
   });
 });
 
@@ -140,6 +150,23 @@ describe('padding: numbers', function () {
     range('002', '010', 2).should.eql(['002', '004', '006', '008', '010']);
     range('-04', 4, 2).should.eql(['-04', '-02', '000', '002', '004']);
   });
+
+  it('should return `null` for invalid ranges:', function () {
+    (range('1.1', '2.1') == null).should.be.true;
+    (range('1.2', '2') == null).should.be.true;
+    (range('1.20', '2') == null).should.be.true;
+    (range('1', '0f') == null).should.be.true;
+    (range('1', '10', 'ff') == null).should.be.true;
+    (range('1', '10.f') == null).should.be.true;
+    (range('1', '10f') == null).should.be.true;
+    (range('1', '20', '2f') == null).should.be.true;
+    (range('1', '20', 'f2') == null).should.be.true;
+    (range('1', '2f', '2') == null).should.be.true;
+    (range('1', 'ff', '2') == null).should.be.true;
+    (range('1', 'ff') == null).should.be.true;
+    (range('1', 'f') == null).should.be.true;
+    (range('f', '1') == null).should.be.true;
+  });
 });
 
 describe('special cases', function () {
@@ -201,7 +228,7 @@ describe('special characters:', function () {
       range('05', '100', '10~').should.eql(['(005|015|025|035|045|055|065|075|085|095)']);
     });
 
-    it('should create a string to be used as a regex logical `or`:', function () {
+    it('should create a regex logical `or`:', function () {
       range('c', 'a', '|').should.eql(['(c|b|a)']);
       range('z', 'a', '|5').should.eql(['(z|u|p|k|f|a)']);
       range('a', 'e', '2|').should.eql(['(a|c|e)']);
@@ -211,9 +238,16 @@ describe('special characters:', function () {
       range('a', 'C', '~').should.eql(['(a|_|Z|Y|X|W|V|U|T|S|R|Q|P|O|N|M|L|K|J|I|H|G|F|E|D|C)']);
     });
 
-    it('should create a string to be used as a regex range:', function () {
+    it('should create a regex character class (range):', function () {
       range('a', 'c', '|').should.eql(['[a-c]']);
       range('1', '3', '|').should.eql(['[1-3]']);
+    });
+
+    it('should not create a regex character class for negative numbers:', function () {
+      range('-1', '2').should.eql(['-1', '0', '1', '2']);
+      range('-1', '2', '~').should.eql(['-1', '0', '1', '2']);
+      range('0', '-2').should.eql(['0', '-1', '-2']);
+      range('0', '-2', '~').should.eql(['0', '-1', '-2']);
     });
 
     it('should not wrap a single value:', function () {
@@ -227,7 +261,6 @@ describe('special characters:', function () {
       range('a', 'e', '~0').should.eql(['[a-e]']);
       range('a', 'e', '|0').should.eql(['[a-e]']);
     });
-
   });
 });
 
@@ -289,11 +322,25 @@ describe('syntax detection:', function () {
   });
 });
 
-describe('logical or prefixes:', function () {
-  it('should add a prefix to a logical or when passed on the options:', function () {
-    range('c', 'a', '|', {prefix: '?:'}).should.eql(['(?:c|b|a)']);
-    range('c', 'a', '~', {prefix: '?:'}).should.eql(['(?:c|b|a)']);
-    range('1', '10', '|', {prefix: '?!'}).should.eql(['(?!1|2|3|4|5|6|7|8|9|10)']);
+describe('prefixes:', function () {
+  describe('logical or:', function () {
+    it('should add a prefix to a logical or when passed on the options:', function () {
+      range('c', 'a', '|', {regexPrefix: '?:'}).should.eql(['(?:c|b|a)']);
+      range('c', 'a', '~', {regexPrefix: '?:'}).should.eql(['(?:c|b|a)']);
+      range('1', '10', '|', {regexPrefix: '?!'}).should.eql(['(?!1|2|3|4|5|6|7|8|9|10)']);
+    });
+  });
+  describe('character classes:', function () {
+    it('should add a negation prefix to a character class:', function () {
+      range('a', 'c', '~', {regexPrefix: '^'}).should.eql(['[^a-c]']);
+      range('a', 'c', '~', {regexPrefix: '^'}).should.eql(['[^a-c]']);
+      range('a', 'c', '|', {regexPrefix: '^'}).should.eql(['[^a-c]']);
+    });
+    it('should not add the wrong prefix to a character class:', function () {
+      range('a', 'c', '~', {regexPrefix: '?!'}).should.eql(['[a-c]']);
+      range('a', 'c', '~', {regexPrefix: '?:'}).should.eql(['[a-c]']);
+      range('a', 'c', '|', {regexPrefix: 'foo'}).should.eql(['[a-c]']);
+    });
   });
 });
 
