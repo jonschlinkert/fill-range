@@ -1,7 +1,7 @@
 {
   "name": "fill-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": {
     "name": "Jon Schlinkert",
@@ -16,17 +16,17 @@
   },
   "license": {
     "type": "MIT",
-    "url": "https://github.com/jonschlinkert/fill-range/blob/master/LICENSE-MIT"
-  },
-  "main": "index.js",
-  "engines": {
-    "node": ">=0.10.0"
+    "url": "https://github.com/jonschlinkert/fill-range/blob/master/LICENSE"
   },
   "files": [
     "index.js"
   ],
+  "main": "index.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
   "scripts": {
-    "test": "mocha -R spec"
+    "test": "mocha"
   },
   "dependencies": {
     "is-number": "^1.1.0",
