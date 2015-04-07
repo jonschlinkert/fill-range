@@ -243,6 +243,16 @@ describe('special characters:', function () {
       range('1', '3', '|').should.eql(['[1-3]']);
     });
 
+    it('should create a regex character class when `optimize` is true:', function () {
+      range('a', 'c', {optimize: true}).should.eql(['[a-c]']);
+      range('1', '3', {optimize: true}).should.eql(['[1-3]']);
+    });
+
+    it('should not create a regex character class when `optimize` is false:', function () {
+      range('a', 'c', {optimize: false}).should.eql(['a', 'b', 'c']);
+      range('1', '3', {optimize: false}).should.eql(['1', '2', '3']);
+    });
+
     it('should not create a regex character class for negative numbers:', function () {
       range('-1', '2').should.eql(['-1', '0', '1', '2']);
       range('-1', '2', '~').should.eql(['-1', '0', '1', '2']);

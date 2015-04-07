@@ -60,7 +60,7 @@ function fillRange(a, b, step, options, fn) {
 
   b = (b.toString() === '-0') ? 0 : b;
 
-  if (opts.makeRe) {
+  if (opts.optimize || opts.makeRe) {
     step = step ? (step += '~') : step;
     expand = true;
     regex = true;
