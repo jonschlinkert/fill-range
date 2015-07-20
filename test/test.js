@@ -8,7 +8,7 @@
 'use strict';
 
 require('should');
-var range = require('./');
+var range = require('..');
 
 describe('error handling', function () {
   it('should throw when the first arg is not a string.', function () {
@@ -89,7 +89,7 @@ describe('steps: numbers', function () {
   it('should increment ranges using the given step', function () {
     range('1', '10', '1').should.eql(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
     range('1', '10', '2').should.eql(['1', '3', '5', '7', '9']);
-    range('1', '10', '2').should.eql(['1', '3', '5', '7', '9']);
+    range('0', '1000', '200').should.eql(['0','200', '400', '600', '800', '1000']);
     range('1', '10', 2).should.eql(['1', '3', '5', '7', '9']);
     range('1', '20', '2').should.eql(['1', '3', '5', '7', '9', '11', '13', '15', '17', '19']);
     range('1', '20', '20').should.eql(['1']);
@@ -145,6 +145,10 @@ describe('padding: numbers', function () {
 
   it('should pad numbers when a step is passed:', function () {
     range('1', '05', '3').should.eql(['01','04']);
+    range('1', '005', '3').should.eql(['001','004']);
+    range('00', '1000', '200').should.eql(['0000','0200', '0400', '0600', '0800', '1000']);
+    range('0', '01000', '200').should.eql(['00000','00200', '00400', '00600', '00800', '01000']);
+    range('001', '5', '3').should.eql(['001','004']);
     range('02', '10', 2).should.eql(['02', '04', '06', '08', '10']);
     range('002', '10', 2).should.eql(['002', '004', '006', '008', '010']);
     range('002', '010', 2).should.eql(['002', '004', '006', '008', '010']);
