@@ -3,21 +3,12 @@
   "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
   "version": "2.2.2",
   "homepage": "https://github.com/jonschlinkert/fill-range",
-  "author": {
-    "name": "Jon Schlinkert",
-    "url": "https://github.com/jonschlinkert"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/jonschlinkert/fill-range.git"
-  },
+  "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "repository": "jonschlinkert/fill-range",
   "bugs": {
     "url": "https://github.com/jonschlinkert/fill-range/issues"
   },
-  "license": {
-    "type": "MIT",
-    "url": "https://github.com/jonschlinkert/fill-range/blob/master/LICENSE"
-  },
+  "license": "MIT",
   "files": [
     "index.js"
   ],
@@ -56,5 +47,15 @@
     "range",
     "ranges",
     "sh"
-  ]
+  ],
+  "verb": {
+    "related": {
+      "list": [
+        "micromatch",
+        "expand-range",
+        "braces",
+        "is-glob"
+      ]
+    }
+  }
 }
