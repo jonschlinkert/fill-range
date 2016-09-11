@@ -1,5 +1,5 @@
 {
-  "name": "fill-range",
+  "name": "to-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
   "version": "2.2.3",
   "homepage": "https://github.com/jonschlinkert/fill-range",
@@ -24,6 +24,8 @@
     "test": "mocha"
   },
   "dependencies": {
+    "extend-shallow": "^2.0.1",
+    "is-negative-zero": "^2.0.0",
     "is-number": "^3.0.0",
     "isobject": "^2.1.0",
     "randomatic": "^1.1.5",
@@ -31,10 +33,7 @@
     "repeat-string": "^1.5.4"
   },
   "devDependencies": {
-    "ansi-cyan": "^0.1.1",
-    "benchmarked": "^0.2.5",
-    "mocha": "^3.0.2",
-    "yargs-parser": "^3.2.0"
+    "mocha": "^3.0.2"
   },
   "keywords": [
     "alpha",

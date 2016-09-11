@@ -6,22 +6,19 @@ var cyan = require('ansi-cyan');
 var argv = require('yargs-parser')(process.argv.slice(2));
 var Suite = require('benchmarked');
 
-function run(type, fixtures) {
+function run(code, fixtures) {
   var suite = new Suite({
     cwd: __dirname,
     fixtures: `fixtures/${fixtures}.js`,
-    code: `code/${type}*.js`
+    code: `code/${code}*.js`
   });
 
   if (argv.dry) {
     suite.dryRun(function(code, fixture) {
-      console.log(arguments)
+      if (/special/.test(fixture.stem)) return;
       console.log(cyan('%s > %s'), code.key, fixture.key);
       var args = require(fixture.path);
-      var res = code.run(args);
-      if (Array.isArray(res)) {
-        res = res.length;
-      }
+      var res = code.run.apply(null, args).length;
       console.log(util.inspect(res, null, 10));
       console.log();
     });
@@ -30,4 +27,4 @@ function run(type, fixtures) {
   }
 }
 
-run(argv._[0] || '*');
+run(argv._[0] || '*', argv._[1] || '**/{1,2,a}*');
