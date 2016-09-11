@@ -11,7 +11,7 @@ var util = require('util');
 var isNumber = require('is-number');
 var extend = require('extend-shallow');
 var repeat = require('repeat-string');
-var cache = {};
+var toRegex = require('to-regex-range');
 
 /**
  * Return a range of numbers or letters.
@@ -44,6 +44,7 @@ function toRange(min, max, step, options) {
   }
 
   opts.step = Math.abs(stepOrig >> 0) || 1;
+  opts.toRegex = opts.toRegex || opts.optimize;
   opts.isNumber = isValidNumber(min) && isValidNumber(max);
   opts.isPadded = isPadded(min) || isPadded(max);
   opts.toString = opts.stringify
@@ -67,44 +68,14 @@ function toRange(min, max, step, options) {
 
   var a = opts.isNumber ? +min : strMin.charCodeAt(0);
   var b = opts.isNumber ? +max : strMax.charCodeAt(0);
-
   return expand(a, b, opts);
-  // if (a < b) {
-  //   return increment(a, b, opts);
-  // }
-  // return decrement(a, b, opts);
-}
-
-function increment(min, max, options) {
-  var arr = [];
-  for (var i = min; i < max + 1; i += options.step) {
-    push(arr, i, options);
-  }
-  return arr;
-}
-
-function decrement(max, min, options) {
-  var arr = [];
-  for (var i = max; i > min - 1; i -= options.step) {
-    push(arr, i, options);
-  }
-  return arr;
-}
-
-function push(arr, i, options) {
-  var val = options.isNumber ? i : String.fromCharCode(i);
-  if (options.toString === false) {
-    val = Number(val);
-  } else {
-    val = String(val);
-  }
-  if (options.isPadded) {
-    val = zeros(val, options);
-  }
-  arr.push(val);
 }
 
 function expand(a, b, options) {
+  if (options.toRegex === true && options.step === 1) {
+    return toRegex(Math.min(a, b), Math.max(a, b));
+  }
+
   var descending = a > b;
   var arr = [];
 
@@ -126,6 +97,11 @@ function expand(a, b, options) {
       a += options.step;
     }
   }
+
+  if (options.toRegex === true) {
+    return arr.join('|');
+  }
+
   return arr;
 }
 

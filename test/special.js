@@ -41,14 +41,14 @@ describe.skip('special cases', function() {
       assert(exact(fill('E', 'A', opts), ['(E|D|C|B|A)']));
     });
 
-    describe('repeat:', function() {
+    describe.skip('repeat:', function() {
       it('should repeat the first arg `n` times:', function() {
         assert(exact(fill('a', 3, '+'), ['a', 'a', 'a']));
         assert(exact(fill('abc', 2, '+'), ['abc', 'abc']));
       });
     });
 
-    describe('join:', function() {
+    describe.skip('join:', function() {
       it('should join values when `>` is passed:', function() {
         assert(exact(fill('a', 'e', '>'), ['abcde']));
         assert(exact(fill('A', 'E', '>'), ['ABCDE']));
@@ -63,7 +63,7 @@ describe.skip('special cases', function() {
       });
     });
 
-    describe('randomize:', function() {
+    describe.skip('randomize:', function() {
       it('should randomize using the first two args when `?` is passed:', function() {
         assert(/[\w\d]{5}/.test(fill('A0', 5, '?')));
         assert(!/[\w\d]{6}/.test(fill('A0', 5, '?')));
