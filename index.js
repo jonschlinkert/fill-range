@@ -130,7 +130,7 @@ function expand(start, stop, options) {
 
 function toRange(a, b, options) {
   if (options.isNumber) {
-    return toRegex(Math.min(a, b), Math.max(a, b));
+    return toRegex(a, b);
   }
   var start = String.fromCharCode(Math.min(a, b));
   var stop = String.fromCharCode(Math.max(a, b));
