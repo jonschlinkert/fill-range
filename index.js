@@ -16,93 +16,140 @@ var toRegex = require('to-regex-range');
 /**
  * Return a range of numbers or letters.
  *
- * @param  {String} `min` Start of the range
- * @param  {String} `b` End of the range
+ * @param  {String} `start` Start of the range
+ * @param  {String} `stop` End of the range
  * @param  {String} `step` Increment or decrement to use.
  * @param  {Function} `fn` Custom function to modify each element in the range.
  * @return {Array}
  */
 
-function toRange(min, max, step, options) {
-  if (typeof max === 'undefined' || min === max) {
-    return [min];
+function fillRange(start, stop, step, options) {
+  if (typeof start === 'undefined') {
+    return [];
   }
 
-  var opts = extend({}, options);
-  if (typeof step === 'string' || isNumber(step)) {
-    opts.step = step;
-  } else if (step) {
-    opts = extend({}, step);
+  if (typeof stop === 'undefined' || start === stop) {
+    // special case, for handling negative zero
+    var isString = typeof start === 'string';
+    if (isNumber(start) && !toNumber(start)) {
+      return [isString ? '0' : 0];
+    }
+    return [start];
   }
 
-  var stepOrig = opts.step;
-  if (stepOrig && !isValidNumber(stepOrig)) {
+  if (typeof step !== 'number' && typeof step !== 'string') {
+    options = step;
+    step = null;
+  }
+
+  if (typeof options === 'function') {
+    options = { transform: options };
+  }
+
+  var opts = extend({step: step}, options);
+  if (opts.step && !isValidNumber(opts.step)) {
     if (opts.strict === true) {
       throw new TypeError('expected options.step to be a number');
     }
     return [];
   }
 
-  opts.step = Math.abs(stepOrig >> 0) || 1;
-  opts.toRegex = opts.toRegex || opts.optimize;
-  opts.isNumber = isValidNumber(min) && isValidNumber(max);
-  opts.isPadded = isPadded(min) || isPadded(max);
-  opts.toString = opts.stringify
-    || typeof stepOrig === 'string'
-    || typeof min === 'string'
-    || typeof max === 'string'
-    || !opts.isNumber;
-
-  var strMin = String(min);
-  var strMax = String(max);
-  if (opts.isPadded) {
-    opts.maxLength = Math.max(strMin.length, strMax.length);
-  }
-
-  if (!opts.isNumber && !isValid(min, max)) {
+  opts.isNumber = isValidNumber(start) && isValidNumber(stop);
+  if (!opts.isNumber && !isValid(start, stop)) {
     if (opts && opts.strict === true) {
-      throw new RangeError('invalid range arguments: ' + util.inspect([min, max]));
+      throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
     }
     return [];
   }
 
-  var a = opts.isNumber ? +min : strMin.charCodeAt(0);
-  var b = opts.isNumber ? +max : strMax.charCodeAt(0);
-  return expand(a, b, opts);
-}
+  opts.isPadded = isPadded(start) || isPadded(stop);
+  opts.toString = opts.stringify
+    || typeof opts.step === 'string'
+    || typeof start === 'string'
+    || typeof stop === 'string'
+    || !opts.isNumber;
 
-function expand(a, b, options) {
-  if (options.toRegex === true && options.step === 1) {
-    return toRegex(Math.min(a, b), Math.max(a, b));
+  if (opts.isPadded) {
+    opts.maxLength = Math.max(String(start).length, String(stop).length);
   }
 
-  var descending = a > b;
-  var arr = [];
+  if (typeof opts.optimize === 'boolean') {
+    opts.toRegex = opts.optimize;
+  }
 
-  while (descending ? (a >= b) : (a <= b)) {
+  return expand(start, stop, opts);
+}
+
+function expand(start, stop, options) {
+  var a = options.isNumber ? toNumber(start) : start.charCodeAt(0);
+  var b = options.isNumber ? toNumber(stop) : stop.charCodeAt(0);
+
+  var step = Math.abs(toNumber(options.step)) || 1;
+  if (options.toRegex && step === 1) {
+    return toRange(a, b, options);
+  }
+
+  var zero = {greater: [], lesser: []};
+  var asc = a < b;
+  var arr = new Array(Math.round((asc ? b - a : a - b) / step));
+  var idx = 0;
+
+  while (asc ? a <= b : a >= b) {
     var val = options.isNumber ? a : String.fromCharCode(a);
-    if (options.toString === false) {
-      val = Number(val);
+    if (options.toRegex && (val >= 0 || !options.isNumber)) {
+      zero.greater.push(val);
     } else {
-      val = String(val);
+      zero.lesser.push(Math.abs(val));
     }
+
     if (options.isPadded) {
       val = zeros(val, options);
     }
 
-    arr.push(val);
-    if (descending) {
-      a -= options.step;
+    if (options.toString) {
+      val = String(val);
+    }
+
+    if (typeof options.transform === 'function') {
+      arr[idx++] = options.transform(val, a, b, step, idx, arr, options);
     } else {
-      a += options.step;
+      arr[idx++] = val;
+    }
+
+    if (asc) {
+      a += step;
+    } else {
+      a -= step;
     }
   }
 
   if (options.toRegex === true) {
-    return arr.join('|');
+    return toSequence(arr, zero);
   }
-
   return arr;
+}
+
+function toRange(a, b, options) {
+  if (options.isNumber) {
+    return toRegex(Math.min(a, b), Math.max(a, b));
+  }
+  var start = String.fromCharCode(Math.min(a, b));
+  var stop = String.fromCharCode(Math.max(a, b));
+  return '[' + start + '-' + stop + ']';
+}
+
+function toSequence(arr, zeros) {
+  var greater = '', lesser = '';
+  if (zeros.greater.length) {
+    greater = zeros.greater.join('|');
+  }
+  if (zeros.lesser.length) {
+    lesser = '-(' + zeros.lesser.join('|') + ')';
+  }
+  if (greater && lesser) {
+    return greater + '|' + lesser;
+  }
+  return greater || lesser;
 }
 
 function zeros(val, options) {
@@ -124,13 +171,17 @@ function zeros(val, options) {
   return val;
 }
 
-function isValid(min, max) {
-  return (isValidNumber(min) || isValidLetter(min))
-      && (isValidNumber(max) || isValidLetter(max));
+function toNumber(val) {
+  return val >> 0;
 }
 
 function isPadded(str) {
   return /^-*0\d+/.test(str);
+}
+
+function isValid(min, max) {
+  return (isValidNumber(min) || isValidLetter(min))
+      && (isValidNumber(max) || isValidLetter(max));
 }
 
 function isValidLetter(ch) {
@@ -142,7 +193,8 @@ function isValidNumber(n) {
 }
 
 /**
- * Expose `toRange`
+ * Expose `fillRange`
+ * @type {Function}
  */
 
-module.exports = toRange;
+module.exports = fillRange;
