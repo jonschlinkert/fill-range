@@ -29,6 +29,11 @@ describe('options', function() {
       assert.equal(fill(2, 100, {toRegex: true}), '[2-9]|[1-9][0-9]|100');
     });
 
+    it('should create regex ranges with positive and negative numbers', function() {
+      assert.equal(fill(-10, 10, {toRegex: true}), '-[1-9]|-?10|[0-9]');
+      assert.equal(fill(-10, 10, 2, {toRegex: true}), '0|2|4|6|8|10|-(10|8|6|4|2)');
+    });
+
     it('should create regex ranges for numbers in descending order', function() {
       assert.equal(fill(8, 2, {toRegex: true}), '[2-8]');
     });
