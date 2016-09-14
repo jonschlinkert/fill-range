@@ -1,6 +1,6 @@
 {
   "name": "fill-range",
-  "description": "Fill in a range of numbers or letters, optionally passing an increment or multiplier to use.",
+  "description": "Fill in a range of numbers or letters, optionally passing an increment or `step` to use, or create a regex-compatible range with `options.toRegex`",
   "version": "2.2.3",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -24,19 +24,17 @@
     "test": "mocha"
   },
   "dependencies": {
-    "is-number": "^2.1.0",
-    "isobject": "^2.0.0",
-    "randomatic": "^1.1.3",
-    "repeat-element": "^1.1.2",
-    "repeat-string": "^1.5.2"
+    "extend-shallow": "^2.0.1",
+    "is-number": "^3.0.0",
+    "repeat-string": "^1.5.4",
+    "to-regex-range": "^0.1.2"
   },
   "devDependencies": {
-    "benchmarked": "^0.1.3",
-    "chalk": "^0.5.1",
-    "should": "*",
-    "mocha": "^2.3.4"
+    "gulp-format-md": "^0.1.10",
+    "mocha": "^3.0.2"
   },
   "keywords": [
+    "array",
     "alpha",
     "alphabetical",
     "bash",
@@ -50,6 +48,7 @@
     "matching",
     "number",
     "numerical",
+    "regex",
     "range",
     "ranges",
     "sh"
@@ -58,10 +57,25 @@
     "related": {
       "list": [
         "braces",
+        "to-regex-range",
         "expand-range",
-        "is-glob",
         "micromatch"
       ]
-    }
+    },
+    "toc": false,
+    "layout": "default",
+    "tasks": [
+      "readme"
+    ],
+    "plugins": [
+      "gulp-format-md"
+    ],
+    "lint": {
+      "reflinks": true
+    },
+    "reflinks": [
+      "verb",
+      "verb-generate-readme"
+    ]
   }
 }
