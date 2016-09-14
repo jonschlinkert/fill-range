@@ -4,6 +4,10 @@
   "version": "2.2.3",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
+  "contributors": [
+    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)",
+    "Paul Miller <paul+gh@paulmillr.com> (paulmillr.com)"
+  ],
   "repository": "jonschlinkert/fill-range",
   "bugs": {
     "url": "https://github.com/jonschlinkert/fill-range/issues"
@@ -39,6 +43,7 @@
     "brace",
     "expand",
     "expansion",
+    "fill",
     "glob",
     "match",
     "matches",
@@ -52,10 +57,10 @@
   "verb": {
     "related": {
       "list": [
-        "micromatch",
-        "expand-range",
         "braces",
-        "is-glob"
+        "expand-range",
+        "is-glob",
+        "micromatch"
       ]
     }
   }
