@@ -56,7 +56,7 @@ function fillRange(start, stop, step, options) {
 
   opts.isNumber = isValidNumber(start) && isValidNumber(stop);
   if (!opts.isNumber && !isValid(start, stop)) {
-    if (opts && opts.strict === true) {
+    if (opts.strict === true) {
       throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
     }
     return [];
