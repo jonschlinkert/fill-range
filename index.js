@@ -73,10 +73,9 @@ function fillRange(start, stop, step, options) {
     opts.maxLength = Math.max(String(start).length, String(stop).length);
   }
 
-  if (typeof opts.optimize === 'boolean') {
-    opts.toRegex = opts.optimize;
-  }
-
+  // support legacy minimatch/fill-range options
+  if (typeof opts.optimize === 'boolean') opts.toRegex = opts.optimize;
+  if (typeof opts.makeRe === 'boolean') opts.toRegex = opts.makeRe;
   return expand(start, stop, opts);
 }
 
