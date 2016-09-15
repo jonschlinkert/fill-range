@@ -127,16 +127,16 @@ If you want errors to be throw, set `options.strict` to true.
 
 ### Custom function
 
-Optionally pass a custom function as the third or fourth argument or on `options.transform`.
+Optionally pass a custom function as last argument or on `options.transform`.
 
 ```js
-fill('a', 'e', function (val, isNumber, pad, i) {
-  if (!isNumber) {
-    return String.fromCharCode(val) + i;
-  }
-  return val;
+// increase padding by two
+var arr = fill('01', '05', function(val, a, b, step, idx, arr, options) {
+  return repeat('0', (options.maxLength + 2) - val.length) + val;
 });
-//=> ['a0', 'b1', 'c2', 'd3', 'e4']
+
+console.log(arr);
+//=> ['0001', '0002', '0003', '0004', '0005']
 ```
 
 ## About
