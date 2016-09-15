@@ -171,7 +171,7 @@ function zeros(val, options) {
 }
 
 function toNumber(val) {
-  return val >> 0;
+  return Number(val) || 0;
 }
 
 function isPadded(str) {
