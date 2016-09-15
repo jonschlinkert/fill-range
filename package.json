@@ -62,7 +62,7 @@
         "micromatch"
       ]
     },
-    "toc": false,
+    "toc": true,
     "layout": "default",
     "tasks": [
       "readme"
