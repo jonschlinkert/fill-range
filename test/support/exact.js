@@ -9,5 +9,5 @@ module.exports = function exact(a, b) {
 
   var aString = util.inspect(a, null, 10);
   var bString = util.inspect(b, null, 10);
-  assert.equal(aString, bString, aString + ' !== ' + bString);
+  assert.strictEqual(aString, bString, aString + ' !== ' + bString);
 };
