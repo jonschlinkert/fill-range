@@ -26,17 +26,17 @@
   "dependencies": {
     "extend-shallow": "^2.0.1",
     "is-number": "^3.0.0",
-    "repeat-string": "^1.5.4",
+    "repeat-string": "^1.6.1",
     "to-regex-range": "^1.0.2"
   },
   "devDependencies": {
-    "gulp-format-md": "^0.1.10",
-    "mocha": "^3.0.2"
+    "gulp-format-md": "^0.1.11",
+    "mocha": "^3.2.0"
   },
   "keywords": [
-    "array",
     "alpha",
     "alphabetical",
+    "array",
     "bash",
     "brace",
     "expand",
@@ -48,18 +48,18 @@
     "matching",
     "number",
     "numerical",
-    "regex",
     "range",
     "ranges",
+    "regex",
     "sh"
   ],
   "verb": {
     "related": {
       "list": [
         "braces",
-        "to-regex-range",
         "expand-range",
-        "micromatch"
+        "micromatch",
+        "to-regex-range"
       ]
     },
     "toc": true,
