@@ -1,10 +1,12 @@
 {
   "name": "fill-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or `step` to use, or create a regex-compatible range with `options.toRegex`",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
+    "<wtgtybhertgeghgtwtg@gmail.com> (https://github.com/wtgtybhertgeghgtwtg)",
+    "Edo Rivai <edo.rivai@gmail.com> (ilumbo.org)",
     "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)",
     "Paul Miller <paul+gh@paulmillr.com> (paulmillr.com)"
   ],
