@@ -39,7 +39,7 @@ function fillRange(start, stop, step, options) {
 
   if (typeof step !== 'number' && typeof step !== 'string') {
     options = step;
-    step = null;
+    step = undefined;
   }
 
   if (typeof options === 'function') {
@@ -48,7 +48,7 @@ function fillRange(start, stop, step, options) {
 
   var opts = extend({step: step}, options);
   if (opts.step && !isValidNumber(opts.step)) {
-    if (opts.strict === true) {
+    if (opts.strictRanges === true) {
       throw new TypeError('expected options.step to be a number');
     }
     return [];
@@ -56,7 +56,7 @@ function fillRange(start, stop, step, options) {
 
   opts.isNumber = isValidNumber(start) && isValidNumber(stop);
   if (!opts.isNumber && !isValid(start, stop)) {
-    if (opts.strict === true) {
+    if (opts.strictRanges === true) {
       throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
     }
     return [];
@@ -85,7 +85,7 @@ function expand(start, stop, options) {
 
   var step = Math.abs(toNumber(options.step)) || 1;
   if (options.toRegex && step === 1) {
-    return toRange(a, b, options);
+    return toRange(a, b, start, stop, options);
   }
 
   var zero = {greater: [], lesser: []};
@@ -123,21 +123,26 @@ function expand(start, stop, options) {
   }
 
   if (options.toRegex === true) {
-    return toSequence(arr, zero);
+    return toSequence(arr, zero, options);
   }
   return arr;
 }
 
-function toRange(a, b, options) {
-  if (options.isNumber) {
-    return toRegex(Math.min(a, b), Math.max(a, b));
+function toRange(a, b, start, stop, options) {
+  if (options.isPadded) {
+    return toRegex(start, stop, options);
   }
+
+  if (options.isNumber) {
+    return toRegex(Math.min(a, b), Math.max(a, b), options);
+  }
+
   var start = String.fromCharCode(Math.min(a, b));
   var stop = String.fromCharCode(Math.max(a, b));
   return '[' + start + '-' + stop + ']';
 }
 
-function toSequence(arr, zeros) {
+function toSequence(arr, zeros, options) {
   var greater = '', lesser = '';
   if (zeros.greater.length) {
     greater = zeros.greater.join('|');
@@ -145,10 +150,14 @@ function toSequence(arr, zeros) {
   if (zeros.lesser.length) {
     lesser = '-(' + zeros.lesser.join('|') + ')';
   }
-  if (greater && lesser) {
-    return greater + '|' + lesser;
+  var res = greater && lesser
+    ? greater + '|' + lesser
+    : greater || lesser;
+
+  if (options.capture) {
+    return '(' + res + ')';
   }
-  return greater || lesser;
+  return res;
 }
 
 function zeros(val, options) {
@@ -175,7 +184,7 @@ function toNumber(val) {
 }
 
 function isPadded(str) {
-  return /^-*0\d+/.test(str);
+  return /^-?0\d/.test(str);
 }
 
 function isValid(min, max) {
