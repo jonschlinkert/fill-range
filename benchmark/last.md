@@ -1,26 +1,45 @@
-#1: 1-100-logical-or.js
-  fill-range.js x 272,324 ops/sec ±0.86% (96 runs sampled)
+Benchmarking: (11 of 11)
+ · 0001-1000-toregex
+ · 0001-1000
+ · 001-100
+ · 1-100-7
+ · 1-100
+ · 1-1000-7
+ · 1-1000-toregex
+ · 1-1000
+ · 1-5
+ · 2-20-2
+ · a-z
 
-#2: 1-100.js
-  fill-range.js x 348,125 ops/sec ±0.90% (93 runs sampled)
+# benchmark/fixtures/0001-1000-toregex.js (52 bytes)
+  fill-range x 713,367 ops/sec ±1.11% (86 runs sampled)
 
-#3: 1-5.js
-  fill-range.js x 1,295,990 ops/sec ±0.95% (98 runs sampled)
+# benchmark/fixtures/0001-1000.js (35 bytes)
+  fill-range x 16,956 ops/sec ±0.96% (86 runs sampled)
 
-#4: 2-20-2.js
-  fill-range.js x 1,009,256 ops/sec ±0.70% (99 runs sampled)
+# benchmark/fixtures/001-100.js (33 bytes)
+  fill-range x 182,150 ops/sec ±0.92% (87 runs sampled)
 
-#5: a-z-character-class.js
-  fill-range.js x 1,360,704 ops/sec ±0.75% (93 runs sampled)
+# benchmark/fixtures/1-100-7.js (34 bytes)
+  fill-range x 989,458 ops/sec ±1.01% (88 runs sampled)
 
-#6: a-z.js
-  fill-range.js x 1,006,624 ops/sec ±0.76% (98 runs sampled)
+# benchmark/fixtures/1-100.js (31 bytes)
+  fill-range x 338,403 ops/sec ±0.93% (90 runs sampled)
 
-#7: options-num.js
-  fill-range.js x 1,063,593 ops/sec ±0.82% (97 runs sampled)
+# benchmark/fixtures/1-1000-7.js (35 bytes)
+  fill-range x 263,486 ops/sec ±1.24% (82 runs sampled)
 
-#8: options-str.js
-  fill-range.js x 1,347,300 ops/sec ±0.88% (92 runs sampled)
+# benchmark/fixtures/1-1000-toregex.js (49 bytes)
+  fill-range x 649,917 ops/sec ±1.58% (88 runs sampled)
 
-#9: random.js
-  fill-range.js x 580,981 ops/sec ±0.90% (88 runs sampled)
+# benchmark/fixtures/1-1000.js (32 bytes)
+  fill-range x 39,919 ops/sec ±0.67% (88 runs sampled)
+
+# benchmark/fixtures/1-5.js (29 bytes)
+  fill-range x 1,451,844 ops/sec ±0.62% (86 runs sampled)
+
+# benchmark/fixtures/2-20-2.js (35 bytes)
+  fill-range x 1,050,072 ops/sec ±1.11% (87 runs sampled)
+
+# benchmark/fixtures/a-z.js (29 bytes)
+  fill-range x 230,740 ops/sec ±1.33% (86 runs sampled)
