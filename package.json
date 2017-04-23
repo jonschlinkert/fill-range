@@ -6,7 +6,7 @@
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
     "<wtgtybhertgeghgtwtg@gmail.com> (https://github.com/wtgtybhertgeghgtwtg)",
-    "Edo Rivai <edo.rivai@gmail.com> (ilumbo.org)",
+    "Edo Rivai <edo.rivai@gmail.com> (edo.rivai.nl)",
     "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)",
     "Paul Miller <paul+gh@paulmillr.com> (paulmillr.com)"
   ],
@@ -29,14 +29,14 @@
     "extend-shallow": "^2.0.1",
     "is-number": "^3.0.0",
     "repeat-string": "^1.6.1",
-    "to-regex-range": "^1.0.2"
+    "to-regex-range": "^2.1.0"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
-    "benchmarked": "^0.2.5",
-    "gulp-format-md": "^0.1.11",
-    "mocha": "^3.2.0",
-    "yargs-parser": "^4.2.1"
+    "benchmarked": "^1.0.0",
+    "gulp-format-md": "^0.1.12",
+    "minimist": "^1.2.0",
+    "mocha": "^3.2.0"
   },
   "keywords": [
     "alpha",
@@ -77,10 +77,6 @@
     ],
     "lint": {
       "reflinks": true
-    },
-    "reflinks": [
-      "verb",
-      "verb-generate-readme"
-    ]
+    }
   }
 }
