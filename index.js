@@ -1,7 +1,7 @@
 /*!
  * fill-range <https://github.com/jonschlinkert/fill-range>
  *
- * Copyright (c) 2014-2015, 2017, Jon Schlinkert.
+ * Copyright (c) 2014-2017, Jon Schlinkert.
  * Released under the MIT License.
  */
 
@@ -19,7 +19,7 @@ var toRegex = require('to-regex-range');
  * @param  {String} `start` Start of the range
  * @param  {String} `stop` End of the range
  * @param  {String} `step` Increment or decrement to use.
- * @param  {Function} `fn` Custom function to modify each element in the range.
+ * @param  {Function} `options`
  * @return {Array}
  */
 

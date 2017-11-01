@@ -5,10 +5,11 @@
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
-    "<wtgtybhertgeghgtwtg@gmail.com> (https://github.com/wtgtybhertgeghgtwtg)",
-    "Edo Rivai <edo.rivai@gmail.com> (edo.rivai.nl)",
-    "Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)",
-    "Paul Miller <paul+gh@paulmillr.com> (paulmillr.com)"
+    "Edo Rivai (edo.rivai.nl)",
+    "Jon Schlinkert (http://twitter.com/jonschlinkert)",
+    "Paul Miller (paulmillr.com)",
+    "Rouven Weßling (www.rouvenwessling.de)",
+    "(https://github.com/wtgtybhertgeghgtwtg)"
   ],
   "repository": "jonschlinkert/fill-range",
   "bugs": {
@@ -29,14 +30,14 @@
     "extend-shallow": "^2.0.1",
     "is-number": "^4.0.0",
     "repeat-string": "^1.6.1",
-    "to-regex-range": "^2.1.0"
+    "to-regex-range": "^2.1.1"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
-    "benchmarked": "^1.0.0",
-    "gulp-format-md": "^0.1.12",
+    "benchmarked": "^2.0.0",
+    "gulp-format-md": "^1.0.0",
     "minimist": "^1.2.0",
-    "mocha": "^3.2.0"
+    "mocha": "^3.5.0"
   },
   "keywords": [
     "alpha",
