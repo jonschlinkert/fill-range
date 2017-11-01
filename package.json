@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "extend-shallow": "^2.0.1",
-    "is-number": "^3.0.0",
+    "is-number": "^4.0.0",
     "repeat-string": "^1.6.1",
     "to-regex-range": "^2.1.0"
   },
