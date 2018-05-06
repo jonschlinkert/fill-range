@@ -120,6 +120,10 @@ function expand(start, stop, options) {
     } else {
       a -= step;
     }
+
+    if (options.limit > 0 && arr.length >= options.limit) {
+      break;
+    }
   }
 
   if (options.toRegex === true) {
