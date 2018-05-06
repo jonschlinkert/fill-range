@@ -93,6 +93,13 @@ function expand(start, stop, options) {
   var arr = new Array(Math.round((asc ? b - a : a - b) / step));
   var idx = 0;
 
+  if (!asc && options.strictOrder) {
+    if (options.strictRanges === true) {
+      throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
+    }
+    return [];
+  }
+
   while (asc ? a <= b : a >= b) {
     var val = options.isNumber ? a : String.fromCharCode(a);
     if (options.toRegex && (val >= 0 || !options.isNumber)) {
