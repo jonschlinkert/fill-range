@@ -8,9 +8,9 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var exact = require('./support/exact');
-var fill = require('..');
+const assert = require('assert');
+const exact = require('./support/exact');
+const fill = require('..');
 
 describe('special cases', function() {
   describe('negative zero', function() {

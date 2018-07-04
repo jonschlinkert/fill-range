@@ -7,11 +7,9 @@
 
 'use strict';
 
-var util = require('util');
-var isNumber = require('is-number');
-var extend = require('extend-shallow');
-var repeat = require('repeat-string');
-var toRegex = require('to-regex-range');
+const util = require('util');
+const isNumber = require('is-number');
+const toRegex = require('to-regex-range');
 
 /**
  * Return a range of numbers or letters.
@@ -24,13 +22,13 @@ var toRegex = require('to-regex-range');
  */
 
 function fillRange(start, stop, step, options) {
-  if (typeof start === 'undefined') {
+  if (start === void 0) {
     return [];
   }
 
-  if (typeof stop === 'undefined' || start === stop) {
+  if (stop === void 0 || start === stop) {
     // special case, for handling negative zero
-    var isString = typeof start === 'string';
+    let isString = typeof start === 'string';
     if (isNumber(start) && !toNumber(start)) {
       return [isString ? '0' : 0];
     }
@@ -46,7 +44,7 @@ function fillRange(start, stop, step, options) {
     options = { transform: options };
   }
 
-  var opts = extend({step: step}, options);
+  const opts = Object.assign({ step }, options);
   if (opts.step && !isValidNumber(opts.step)) {
     if (opts.strictRanges === true) {
       throw new TypeError('expected options.step to be a number');
@@ -63,11 +61,12 @@ function fillRange(start, stop, step, options) {
   }
 
   opts.isPadded = isPadded(start) || isPadded(stop);
-  opts.toString = opts.stringify
-    || typeof opts.step === 'string'
-    || typeof start === 'string'
-    || typeof stop === 'string'
-    || !opts.isNumber;
+  opts.toString =
+    opts.stringify ||
+    typeof opts.step === 'string' ||
+    typeof start === 'string' ||
+    typeof stop === 'string' ||
+    !opts.isNumber;
 
   if (opts.isPadded) {
     opts.maxLength = Math.max(String(start).length, String(stop).length);
@@ -80,18 +79,18 @@ function fillRange(start, stop, step, options) {
 }
 
 function expand(start, stop, options) {
-  var a = options.isNumber ? toNumber(start) : start.charCodeAt(0);
-  var b = options.isNumber ? toNumber(stop) : stop.charCodeAt(0);
+  let a = options.isNumber ? toNumber(start) : start.charCodeAt(0);
+  let b = options.isNumber ? toNumber(stop) : stop.charCodeAt(0);
 
-  var step = Math.abs(toNumber(options.step)) || 1;
+  let step = Math.abs(toNumber(options.step)) || 1;
   if (options.toRegex && step === 1) {
     return toRange(a, b, start, stop, options);
   }
 
-  var zero = {greater: [], lesser: []};
-  var asc = a < b;
-  var arr = new Array(Math.round((asc ? b - a : a - b) / step));
-  var idx = 0;
+  let zero = { greater: [], lesser: [] };
+  let asc = a < b;
+  let arr = new Array(Math.round((asc ? b - a : a - b) / step));
+  let idx = 0;
 
   if (!asc && options.strictOrder) {
     if (options.strictRanges === true) {
@@ -101,7 +100,7 @@ function expand(start, stop, options) {
   }
 
   while (asc ? a <= b : a >= b) {
-    var val = options.isNumber ? a : String.fromCharCode(a);
+    let val = options.isNumber ? a : String.fromCharCode(a);
     if (options.toRegex && (val >= 0 || !options.isNumber)) {
       zero.greater.push(val);
     } else {
@@ -148,41 +147,42 @@ function toRange(a, b, start, stop, options) {
     return toRegex(Math.min(a, b), Math.max(a, b), options);
   }
 
-  var start = String.fromCharCode(Math.min(a, b));
-  var stop = String.fromCharCode(Math.max(a, b));
-  return '[' + start + '-' + stop + ']';
+  start = String.fromCharCode(Math.min(a, b));
+  stop = String.fromCharCode(Math.max(a, b));
+  return `[${start}-${stop}]`;
 }
 
 function toSequence(arr, zeros, options) {
-  var greater = '', lesser = '';
+  let greater = '';
+  let lesser = '';
+
   if (zeros.greater.length) {
     greater = zeros.greater.join('|');
   }
-  if (zeros.lesser.length) {
-    lesser = '-(' + zeros.lesser.join('|') + ')';
-  }
-  var res = greater && lesser
-    ? greater + '|' + lesser
-    : greater || lesser;
 
+  if (zeros.lesser.length) {
+    lesser = `-(${zeros.lesser.join('|')})`;
+  }
+
+  let res = greater && lesser ? `${greater}|${lesser}` : greater || lesser;
   if (options.capture) {
-    return '(' + res + ')';
+    return `(${res})`;
   }
   return res;
 }
 
 function zeros(val, options) {
   if (options.isPadded) {
-    var str = String(val);
-    var len = str.length;
-    var dash = '';
+    let str = String(val);
+    let len = str.length;
+    let dash = '';
     if (str.charAt(0) === '-') {
       dash = '-';
       str = str.slice(1);
     }
-    var diff = options.maxLength - len;
-    var pad = repeat('0', diff);
-    val = (dash + pad + str);
+    let diff = options.maxLength - len;
+    let pad = '0'.repeat(diff);
+    val = dash + pad + str;
   }
   if (options.stringify) {
     return String(val);
@@ -200,7 +200,7 @@ function isPadded(str) {
 
 function isValid(min, max) {
   return (isValidNumber(min) || isValidLetter(min))
-      && (isValidNumber(max) || isValidLetter(max));
+    && (isValidNumber(max) || isValidLetter(max));
 }
 
 function isValidLetter(ch) {

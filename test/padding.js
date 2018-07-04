@@ -8,10 +8,10 @@
 'use strict';
 
 require('mocha');
-var util = require('util');
-var assert = require('assert');
-var exact = require('./support/exact');
-var fill = require('..');
+const util = require('util');
+const assert = require('assert');
+const exact = require('./support/exact');
+const fill = require('..');
 
 describe('padding: numbers', function() {
   it('should pad incremented numbers:', function() {

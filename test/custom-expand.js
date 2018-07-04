@@ -1,37 +1,27 @@
 'use strict';
 
 require('mocha');
-var repeat = require('repeat-string');
-var isNumber = require('is-number');
-var assert = require('assert');
-var exact = require('./support/exact');
-var fill = require('..');
+const isNumber = require('is-number');
+const assert = require('assert');
+const exact = require('./support/exact');
+const fill = require('..');
 
 describe('custom function for expansions:', function() {
   it('should expose the current value as the first param.', function() {
-    var arr = fill(1, 5, function(val, a, b, step, idx, arr, options) {
-      return val;
-    });
-    exact(arr, [1, 2, 3, 4, 5]);
-  });
-
-  it('should expose the `isNumber` boolean as the second param.', function() {
-    var arr = fill('a', 'e', function(val, a, b, step, idx, arr, options) {
-      return !isNumber ? String.fromCharCode(val) : val;
-    });
-    exact(arr, ['a', 'b', 'c', 'd', 'e']);
+    exact(fill(1, 5, val => val), [1, 2, 3, 4, 5]);
+    exact(fill('a', 'e', val => val), ['a', 'b', 'c', 'd', 'e']);
   });
 
   it('should expose padding `maxLength` on options', function() {
-    var arr = fill('01', '05', function(val, a, b, step, idx, arr, options) {
+    const arr = fill('01', '05', function(val, a, b, step, idx, arr, options) {
       // increase padding by two
-      return repeat('0', (options.maxLength + 2) - val.length) + val;
+      return '0'.repeat(options.maxLength - val.length + 2) + val;
     });
     exact(arr, ['0001', '0002', '0003', '0004', '0005']);
   });
 
   it('should expose the index as the fifth param.', function() {
-    var arr = fill('a', 'e', function(val, a, b, step, idx, arr, options) {
+    const arr = fill('a', 'e', function(val, a, b, step, idx, arr, options) {
       return val + (idx - 1);
     });
     exact(arr, ['a0', 'b1', 'c2', 'd3', 'e4']);

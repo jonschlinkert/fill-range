@@ -8,9 +8,9 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var exact = require('./support/exact');
-var fill = require('..');
+const assert = require('assert');
+const exact = require('./support/exact');
+const fill = require('..');
 
 describe('steps', function() {
   describe('steps: numbers', function() {
@@ -77,9 +77,8 @@ describe('steps', function() {
 
   describe('options: step', function() {
     it('should use the step defined on the options:', function() {
-      var opts = { step: 2 };
-      exact(fill('a', 'e', opts), ['a','c', 'e']);
-      exact(fill('E', 'A', opts), ['E', 'C', 'A']);
+      exact(fill('a', 'e', { step: 2 }), ['a','c', 'e']);
+      exact(fill('E', 'A', { step: 2 }), ['E', 'C', 'A']);
     });
   });
 });

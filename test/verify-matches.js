@@ -8,30 +8,30 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var expand = require('./support/expand');
-var exact = require('./support/exact');
-var fill = require('..');
-var count = 0;
+const assert = require('assert');
+const expand = require('./support/expand');
+const exact = require('./support/exact');
+const fill = require('..');
+let count = 0;
 
 function toRegex() {
-  var str = fill.apply(null, arguments);
+  let str = fill.apply(null, arguments);
   return new RegExp('^(' + str + ')$');
 }
 function matcher() {
-  var regex = toRegex.apply(null, arguments);
+  let regex = toRegex.apply(null, arguments);
   return function(num) {
     return regex.test(String(num));
   };
 }
 
 function verifyRange(min, max, from, to) {
-  var fn = matcher(min, max, {makeRe: true});
-  var range = expand(from, to);
-  var len = range.length, i = -1;
+  let fn = matcher(min, max, {makeRe: true});
+  let range = expand(from, to);
+  let len = range.length, i = -1;
 
   while (++i < len) {
-    var num = range[i];
+    let num = range[i];
     if (min <= num && num <= max) {
       assert(fn(num));
     } else {
@@ -43,7 +43,7 @@ function verifyRange(min, max, from, to) {
 
 describe('validate ranges', function() {
   after(function() {
-    var num = (+(+(count).toFixed(2))).toLocaleString();
+    let num = (+(+(count).toFixed(2))).toLocaleString();
     console.log();
     console.log('   ', num, 'patterns tested');
   });

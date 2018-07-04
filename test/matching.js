@@ -8,25 +8,24 @@
 'use strict';
 
 require('mocha');
-var assert = require('assert');
-var expand = require('./support/expand');
-var exact = require('./support/exact');
-var fill = require('..');
+const assert = require('assert');
+const expand = require('./support/expand');
+const exact = require('./support/exact');
+const fill = require('..');
 
-function toRegex() {
-  var str = fill.apply(null, arguments);
+function toRegex(...args) {
+  const str = fill(...args);
   return new RegExp('^(' + str + ')$');
 }
-function matcher() {
-  var regex = toRegex.apply(null, arguments);
+function matcher(...args) {
+  const regex = toRegex(...args);
   return function(num) {
     return regex.test(String(num));
   };
 }
-function isMatch() {
-  var args = [].slice.call(arguments);
-  var last = args.pop();
-  var fn = matcher.apply(null, args);
+function isMatch(...args) {
+  const last = args.pop();
+  const fn = matcher.apply(null, args);
   return fn(last);
 }
 
