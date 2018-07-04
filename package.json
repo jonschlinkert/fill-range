@@ -27,10 +27,10 @@
     "test": "mocha"
   },
   "dependencies": {
-    "extend-shallow": "^2.0.1",
+    "extend-shallow": "^3.0.2",
     "is-number": "^4.0.0",
     "repeat-string": "^1.6.1",
-    "to-regex-range": "^2.1.1"
+    "to-regex-range": "^3.0.0"
   },
   "devDependencies": {
     "ansi-cyan": "^0.1.1",
