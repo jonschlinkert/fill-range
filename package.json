@@ -1,7 +1,7 @@
 {
   "name": "fill-range",
   "description": "Fill in a range of numbers or letters, optionally passing an increment or `step` to use, or create a regex-compatible range with `options.toRegex`",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "homepage": "https://github.com/jonschlinkert/fill-range",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "contributors": [
