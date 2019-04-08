@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "is-number": "^7.0.0",
-    "to-regex-range": "^4.0.1"
+    "to-regex-range": "^5.0.1"
   },
   "devDependencies": {
     "benchmarked": "^2.0.0",
