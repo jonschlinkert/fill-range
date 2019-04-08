@@ -14,19 +14,17 @@ const exact = require('./support/exact');
 const fill = require('..');
 let count = 0;
 
-function toRegex() {
-  let str = fill.apply(null, arguments);
-  return new RegExp('^(' + str + ')$');
-}
-function matcher() {
-  let regex = toRegex.apply(null, arguments);
-  return function(num) {
+const toRegex = (...args) => new RegExp(`^(${fill(...args)})$`);
+
+function matcher(...args) {
+  let regex = toRegex(...args);
+  return num => {
     return regex.test(String(num));
   };
 }
 
 function verifyRange(min, max, from, to) {
-  let fn = matcher(min, max, {makeRe: true});
+  let fn = matcher(min, max, { toRegex: true });
   let range = expand(from, to);
   let len = range.length, i = -1;
 

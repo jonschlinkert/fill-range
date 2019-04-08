@@ -2,218 +2,239 @@
  * fill-range <https://github.com/jonschlinkert/fill-range>
  *
  * Copyright (c) 2014-present, Jon Schlinkert.
- * Released under the MIT License.
+ * Licensed under the MIT License.
  */
 
 'use strict';
 
 const util = require('util');
-const isNumber = require('is-number');
-const toRegex = require('to-regex-range');
+const toRegexRange = require('to-regex-range');
 
-/**
- * Return a range of numbers or letters.
- *
- * @param  {String} `start` Start of the range
- * @param  {String} `stop` End of the range
- * @param  {String} `step` Increment or decrement to use.
- * @param  {Function} `options`
- * @return {Array}
- */
+const isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
 
-function fillRange(start, stop, step, options) {
-  if (start === void 0) {
+const transform = toNumber => {
+  return value => toNumber === true ? Number(value) : String(value);
+};
+
+const isValidValue = value => {
+  return typeof value === 'number' || (typeof value === 'string' && value !== '');
+};
+
+const isNumber = num => Number.isInteger(+num);
+
+const zeros = input => {
+  let value = `${input}`;
+  let index = -1;
+  if (value[0] === '-') value = value.slice(1);
+  if (value === '0') return false;
+  while (value[++index] === '0');
+  return index > 0;
+};
+
+const stringify = (start, end, options) => {
+  if (typeof start === 'string' || typeof end === 'string') {
+    return true;
+  }
+  return options.stringify === true;
+};
+
+const pad = (input, maxLength, toNumber) => {
+  if (maxLength > 0) {
+    let dash = input[0] === '-' ? '-' : '';
+    if (dash) input = input.slice(1);
+    input = (dash + input.padStart(dash ? maxLength - 1 : maxLength, '0'));
+  }
+  if (toNumber === false) {
+    return String(input);
+  }
+  return input;
+};
+
+const toMaxLen = (input, maxLength) => {
+  let negative = input[0] === '-' ? '-' : '';
+  if (negative) input = input.slice(1);
+  while (input.length < maxLength) input = '0' + input;
+  return negative ? ('-' + input.slice(1)) : input;
+};
+
+const toSequence = (parts, options) => {
+  parts.negatives.sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+  parts.positives.sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
+
+  let prefix = options.capture ? '' : '?:';
+  let positives = '';
+  let negatives = '';
+  let result;
+
+  if (parts.positives.length) {
+    positives = parts.positives.join('|');
+  }
+
+  if (parts.negatives.length) {
+    negatives = `-(${prefix}${parts.negatives.join('|')})`;
+  }
+
+  if (positives && negatives) {
+    result = `${positives}|${negatives}`;
+  } else {
+    result = positives || negatives;
+  }
+
+  if (options.wrap) {
+    return `(${prefix}${result})`;
+  }
+
+  return result;
+};
+
+const toRange = (a, b, isNumbers, options) => {
+  if (isNumbers) {
+    return toRegexRange(a, b, { wrap: false, ...options });
+  }
+  let start = String.fromCharCode(a);
+  let stop = String.fromCharCode(b);
+  return `[${start}-${stop}]`;
+};
+
+const toRegex = (start, end, options) => {
+  if (Array.isArray(start)) {
+    let wrap = options.wrap === true;
+    let prefix = options.capture ? '' : '?:';
+    return wrap ? `(${prefix}${start.join('|')})` : start.join('|');
+  }
+  return toRegexRange(start, end, options);
+};
+
+const rangeError = (...args) => {
+  return new RangeError('Invalid range arguments: ' + util.inspect(...args));
+};
+
+const invalidRange = (start, end, options) => {
+  if (options.strictRanges === true) throw rangeError([start, end]);
+  return [];
+};
+
+const invalidStep = (step, options) => {
+  if (options.strictRanges === true) {
+    throw new TypeError(`Expected step "${step}" to be a number`);
+  }
+  return [];
+};
+
+const fillNumbers = (start, end, step = 1, options = {}) => {
+  let a = Number(start);
+  let b = Number(end);
+
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    if (options.strictRanges === true) throw rangeError([start, end]);
     return [];
   }
 
-  if (stop === void 0 || start === stop) {
-    // special case, for handling negative zero
-    let isString = typeof start === 'string';
-    if (isNumber(start) && !toNumber(start)) {
-      return [isString ? '0' : 0];
-    }
-    return [start];
-  }
+  // fix negative zero
+  if (a === 0) a = 0;
+  if (b === 0) b = 0;
 
-  if (typeof step !== 'number' && typeof step !== 'string') {
-    options = step;
-    step = undefined;
-  }
+  let descending = a > b;
+  let startString = String(start);
+  let endString = String(end);
+  let stepString = String(step);
+  step = Math.max(Math.abs(step), 1);
 
-  if (typeof options === 'function') {
-    options = { transform: options };
-  }
+  let padded = zeros(startString) || zeros(endString) || zeros(stepString);
+  let maxLen = padded ? Math.max(startString.length, endString.length, stepString.length) : 0;
+  let toNumber = padded === false && stringify(start, end, options) === false;
+  let format = options.transform || transform(toNumber);
 
-  const opts = Object.assign({ step }, options);
-  if (opts.step && !isValidNumber(opts.step)) {
-    if (opts.strictRanges === true) {
-      throw new TypeError('expected options.step to be a number');
-    }
-    return [];
-  }
-
-  opts.isNumber = isValidNumber(start) && isValidNumber(stop);
-  if (!opts.isNumber && !isValid(start, stop)) {
-    if (opts.strictRanges === true) {
-      throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
-    }
-    return [];
-  }
-
-  opts.isPadded = isPadded(start) || isPadded(stop);
-  opts.toString =
-    opts.stringify ||
-    typeof opts.step === 'string' ||
-    typeof start === 'string' ||
-    typeof stop === 'string' ||
-    !opts.isNumber;
-
-  if (opts.isPadded) {
-    opts.maxLength = Math.max(String(start).length, String(stop).length);
-  }
-
-  // support legacy minimatch/fill-range options
-  if (typeof opts.optimize === 'boolean') opts.toRegex = opts.optimize;
-  if (typeof opts.makeRe === 'boolean') opts.toRegex = opts.makeRe;
-  return expand(start, stop, opts);
-}
-
-function expand(start, stop, options) {
-  let a = options.isNumber ? toNumber(start) : start.charCodeAt(0);
-  let b = options.isNumber ? toNumber(stop) : stop.charCodeAt(0);
-
-  let step = Math.abs(toNumber(options.step)) || 1;
   if (options.toRegex && step === 1) {
-    return toRange(a, b, start, stop, options);
+    return toRange(toMaxLen(start, maxLen), toMaxLen(end, maxLen), true, options);
   }
 
-  let zero = { greater: [], lesser: [] };
-  let asc = a < b;
-  let arr = new Array(Math.round((asc ? b - a : a - b) / step));
-  let idx = 0;
+  let parts = { negatives: [], positives: [] };
+  let push = num => parts[num < 0 ? 'negatives' : 'positives'].push(Math.abs(num));
+  let range = [];
+  let index = 0;
 
-  if (!asc && options.strictOrder) {
-    if (options.strictRanges === true) {
-      throw new RangeError('invalid range arguments: ' + util.inspect([start, stop]));
-    }
-    return [];
-  }
-
-  while (asc ? a <= b : a >= b) {
-    let val = options.isNumber ? a : String.fromCharCode(a);
-    if (options.toRegex && (val >= 0 || !options.isNumber)) {
-      zero.greater.push(val);
+  while (descending ? a >= b : a <= b) {
+    if (options.toRegex === true && step > 1) {
+      push(a);
     } else {
-      zero.lesser.push(Math.abs(val));
+      range.push(pad(format(a, index), maxLen, toNumber));
     }
-
-    if (options.isPadded) {
-      val = zeros(val, options);
-    }
-
-    if (options.toString) {
-      val = String(val);
-    }
-
-    if (typeof options.transform === 'function') {
-      arr[idx++] = options.transform(val, a, b, step, idx, arr, options);
-    } else {
-      arr[idx++] = val;
-    }
-
-    if (asc) {
-      a += step;
-    } else {
-      a -= step;
-    }
-
-    if (options.limit > 0 && arr.length >= options.limit) {
-      break;
-    }
+    a = descending ? a - step : a + step;
+    index++;
   }
 
   if (options.toRegex === true) {
-    return toSequence(arr, zero, options);
-  }
-  return arr;
-}
-
-function toRange(a, b, start, stop, options) {
-  if (options.isPadded) {
-    return toRegex(start, stop, options);
+    return step > 1
+      ? toSequence(parts, options)
+      : toRegex(range, null, { wrap: false, ...options });
   }
 
-  if (options.isNumber) {
-    return toRegex(Math.min(a, b), Math.max(a, b), options);
+  return range;
+};
+
+const fillLetters = (start, end, step = 1, options = {}) => {
+  if ((!isNumber(start) && start.length > 1) || (!isNumber(end) && end.length > 1)) {
+    return invalidRange(start, end, options);
   }
 
-  start = String.fromCharCode(Math.min(a, b));
-  stop = String.fromCharCode(Math.max(a, b));
-  return `[${start}-${stop}]`;
-}
+  let format = options.transform || (val => String.fromCharCode(val));
+  let a = `${start}`.charCodeAt(0);
+  let b = `${end}`.charCodeAt(0);
 
-function toSequence(arr, zeros, options) {
-  let greater = '';
-  let lesser = '';
+  let min = Math.min(a, b);
+  let max = Math.max(a, b);
 
-  if (zeros.greater.length) {
-    greater = zeros.greater.join('|');
+  if (options.toRegex && step === 1) {
+    return toRange(min, max, false, options);
   }
 
-  if (zeros.lesser.length) {
-    lesser = `-(${zeros.lesser.join('|')})`;
+  let index = 0;
+  let array = [format(min, index)];
+
+  while (min < max - step + 1) {
+    index++;
+    array.push(format(min += step, index));
   }
 
-  let res = greater && lesser ? `${greater}|${lesser}` : greater || lesser;
-  if (options.capture) {
-    return `(${res})`;
+  let result = a > b ? array.reverse() : array;
+  if (options.toRegex === true) {
+    return toRegex(result, null, { wrap: false, options });
   }
-  return res;
-}
+  return result;
+};
 
-function zeros(val, options) {
-  if (options.isPadded) {
-    let str = String(val);
-    let len = str.length;
-    let dash = '';
-    if (str.charAt(0) === '-') {
-      dash = '-';
-      str = str.slice(1);
-    }
-    let diff = options.maxLength - len;
-    let pad = '0'.repeat(diff);
-    val = dash + pad + str;
+const fill = (start, end, step, options = {}) => {
+  if (end == null && isValidValue(start)) {
+    return [start];
   }
-  if (options.stringify) {
-    return String(val);
+
+  if (!isValidValue(start) || !isValidValue(end)) {
+    return invalidRange(start, end, options);
   }
-  return val;
-}
 
-function toNumber(val) {
-  return Number(val) || 0;
-}
+  if (typeof step === 'function') {
+    return fill(start, end, 1, { transform: step });
+  }
 
-function isPadded(str) {
-  return /^-?0\d/.test(str);
-}
+  if (isObject(step)) {
+    return fill(start, end, 0, step);
+  }
 
-function isValid(min, max) {
-  return (isValidNumber(min) || isValidLetter(min))
-    && (isValidNumber(max) || isValidLetter(max));
-}
+  let opts = { ...options };
+  if (opts.capture === true) opts.wrap = true;
+  step = step || opts.step || 1;
 
-function isValidLetter(ch) {
-  return typeof ch === 'string' && ch.length === 1 && /^\w+$/.test(ch);
-}
+  if (!isNumber(step)) {
+    if (step != null && !isObject(step)) return invalidStep(step, opts);
+    return fill(start, end, 1, step);
+  }
 
-function isValidNumber(n) {
-  return isNumber(n) && !/\./.test(n);
-}
+  if (isNumber(start) && isNumber(end)) {
+    return fillNumbers(start, end, step, opts);
+  }
 
-/**
- * Expose `fillRange`
- * @type {Function}
- */
+  return fillLetters(start, end, Math.max(Math.abs(step), 1), opts);
+};
 
-module.exports = fillRange;
+module.exports = fill;

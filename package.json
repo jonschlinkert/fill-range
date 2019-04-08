@@ -21,21 +21,17 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": ">=4.0"
+    "node": ">=8"
   },
   "scripts": {
     "test": "mocha"
   },
   "dependencies": {
-    "is-number": "^7.0.0",
-    "to-regex-range": "^4.0.1"
+    "to-regex-range": "^5.0.1"
   },
   "devDependencies": {
-    "benchmarked": "^2.0.0",
-    "gulp-format-md": "^1.0.0",
-    "minimist": "^1.2.0",
-    "mocha": "^3.5.3",
-    "write": "^1.0.3"
+    "gulp-format-md": "^2.0.0",
+    "mocha": "^6.1.1"
   },
   "keywords": [
     "alpha",
@@ -58,15 +54,7 @@
     "sh"
   ],
   "verb": {
-    "related": {
-      "list": [
-        "braces",
-        "expand-range",
-        "micromatch",
-        "to-regex-range"
-      ]
-    },
-    "toc": true,
+    "toc": false,
     "layout": "default",
     "tasks": [
       "readme"

@@ -1,13 +1,11 @@
 'use strict';
 
-var util = require('util');
-var assert = require('assert');
+const util = require('util');
+const assert = require('assert');
 
-module.exports = function exact(a, b) {
-  assert(Array.isArray(a));
-  assert(Array.isArray(b));
-
-  var aString = util.inspect(a, null, 10);
-  var bString = util.inspect(b, null, 10);
-  assert.strictEqual(aString, bString, aString + ' !== ' + bString);
+module.exports = (actual, expected) => {
+  assert(Array.isArray(actual));
+  let a = util.inspect(actual);
+  let b = util.inspect(expected);
+  assert.strictEqual(a, b, `${a} !== ${b}`);
 };
