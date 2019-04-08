@@ -64,6 +64,7 @@ describe('steps', () => {
 
   describe('steps: letters', () => {
     it('should use increments with alphabetical ranges', () => {
+      exact(fill('z', 'a', -2), ['z', 'x', 'v', 't', 'r', 'p', 'n', 'l', 'j', 'h', 'f', 'd', 'b']);
       exact(fill('a', 'e', 2), ['a','c', 'e']);
       exact(fill('E', 'A', 2), ['E', 'C', 'A']);
     });

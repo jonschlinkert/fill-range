@@ -52,9 +52,12 @@ const pad = (input, maxLength, toNumber) => {
 
 const toMaxLen = (input, maxLength) => {
   let negative = input[0] === '-' ? '-' : '';
-  if (negative) input = input.slice(1);
+  if (negative) {
+    input = input.slice(1);
+    maxLength--;
+  }
   while (input.length < maxLength) input = '0' + input;
-  return negative ? ('-' + input.slice(1)) : input;
+  return negative ? ('-' + input) : input;
 };
 
 const toSequence = (parts, options) => {
@@ -91,7 +94,10 @@ const toRange = (a, b, isNumbers, options) => {
   if (isNumbers) {
     return toRegexRange(a, b, { wrap: false, ...options });
   }
+
   let start = String.fromCharCode(a);
+  if (a === b) return start;
+
   let stop = String.fromCharCode(b);
   return `[${start}-${stop}]`;
 };
@@ -178,10 +184,12 @@ const fillLetters = (start, end, step = 1, options = {}) => {
     return invalidRange(start, end, options);
   }
 
+
   let format = options.transform || (val => String.fromCharCode(val));
   let a = `${start}`.charCodeAt(0);
   let b = `${end}`.charCodeAt(0);
 
+  let descending = a > b;
   let min = Math.min(a, b);
   let max = Math.max(a, b);
 
@@ -189,19 +197,20 @@ const fillLetters = (start, end, step = 1, options = {}) => {
     return toRange(min, max, false, options);
   }
 
+  let range = [];
   let index = 0;
-  let array = [format(min, index)];
 
-  while (min < max - step + 1) {
+  while (descending ? a >= b : a <= b) {
+    range.push(format(a, index));
+    a = descending ? a - step : a + step;
     index++;
-    array.push(format(min += step, index));
   }
 
-  let result = a > b ? array.reverse() : array;
   if (options.toRegex === true) {
-    return toRegex(result, null, { wrap: false, options });
+    return toRegex(range, null, { wrap: false, options });
   }
-  return result;
+
+  return range;
 };
 
 const fill = (start, end, step, options = {}) => {
