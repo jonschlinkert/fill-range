@@ -7,7 +7,7 @@
 
 'use strict';
 
-const util = require('util');
+const util = require('react-native-util');
 const toRegexRange = require('to-regex-range');
 
 const isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
