@@ -1,7 +1,5 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
 const exact = require('./support/exact');
 const fill = require('..');
 
@@ -17,7 +15,7 @@ describe('ranges', () => {
 
     it('should decrement alphabetical ranges', () => {
       exact(fill('E', 'A'), ['E', 'D', 'C', 'B', 'A']);
-      exact(fill('a', 'C'), ['a','`','_','^',']',"\\",'[','Z','Y','X','W','V','U','T','S','R','Q','P','O','N','M','L','K','J','I','H','G','F','E','D','C']);
+      exact(fill('a', 'C'), ['a', '`', '_', '^', ']', '\\', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C']);
       exact(fill('z', 'm'), ['z', 'y', 'x', 'w', 'v', 'u', 't', 's', 'r', 'q', 'p', 'o', 'n', 'm']);
     });
   });
@@ -49,7 +47,7 @@ describe('ranges', () => {
 
     it('should decrement alphabetical ranges', () => {
       exact(fill('E', 'A'), ['E', 'D', 'C', 'B', 'A']);
-      exact(fill('a', 'C'), ['a','`','_','^',']',"\\",'[','Z','Y','X','W','V','U','T','S','R','Q','P','O','N','M','L','K','J','I','H','G','F','E','D','C']);
+      exact(fill('a', 'C'), ['a', '`', '_', '^', ']', '\\', '[', 'Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C']);
       exact(fill('z', 'm'), ['z', 'y', 'x', 'w', 'v', 'u', 't', 's', 'r', 'q', 'p', 'o', 'n', 'm']);
     });
   });

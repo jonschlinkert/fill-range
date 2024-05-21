@@ -1,7 +1,5 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
 const exact = require('./support/exact');
 const fill = require('..');
 

@@ -1,7 +1,5 @@
 'use strict';
 
-require('mocha');
-const assert = require('assert');
 const exact = require('./support/exact');
 const fill = require('..');
 
@@ -23,7 +21,7 @@ describe('special cases', () => {
     });
 
     it('should adjust padding for negative numbers:', () => {
-      exact(fill('-01', '5'), ['-01','000','001','002','003','004','005']);
+      exact(fill('-01', '5'), ['-01', '000', '001', '002', '003', '004', '005']);
     });
   });
 });

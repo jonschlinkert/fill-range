@@ -7,10 +7,8 @@
 
 'use strict';
 
-require('mocha');
 const assert = require('assert');
 const expand = require('./support/expand');
-const exact = require('./support/exact');
 const fill = require('..');
 let count = 0;
 
