@@ -1,7 +1,7 @@
 'use strict';
 
-const assert = require('assert');
-const util = require('util');
+const assert = require('node:assert');
+const util = require('node:util');
 
 module.exports = (actual, expected) => {
   assert(Array.isArray(actual));

@@ -1,6 +1,6 @@
 'use strict';
 
-const assert = require('assert');
+const assert = require('node:assert');
 const exact = require('./support/exact');
 const fill = require('..');
 

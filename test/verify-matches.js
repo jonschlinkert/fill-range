@@ -7,7 +7,7 @@
 
 'use strict';
 
-const assert = require('assert');
+const assert = require('node:assert');
 const expand = require('./support/expand');
 const fill = require('..');
 let count = 0;
