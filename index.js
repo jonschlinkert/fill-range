@@ -206,7 +206,7 @@ const fillLetters = (start, end, step = 1, options = {}) => {
   }
 
   if (options.toRegex === true) {
-    return toRegex(range, null, { wrap: false, options });
+    return toRegex(range, null, { wrap: false, ...options });
   }
 
   return range;

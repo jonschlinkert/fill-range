@@ -101,5 +101,10 @@ describe('options', () => {
       assert.equal(fill(-10, 10, 2, opts), '(0|2|4|6|8|10|-(2|4|6|8|10))');
       assert.equal(fill(-10, 10, opts), '(-[1-9]|-?10|[0-9])');
     });
+
+    it('should wrap alpha ranges in parans when step > 1', () => {
+      let opts = { toRegex: true, capture: true };
+      assert.equal(fill('a', 'z', 2, opts), '(a|c|e|g|i|k|m|o|q|s|u|w|y)');
+    });
   });
 });
