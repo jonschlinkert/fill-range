@@ -57,3 +57,14 @@ describe('padding: numbers', () => {
     assert.deepEqual(fill('-04', 4, 2), ['-04', '-02', '000', '002', '004']);
   });
 });
+
+describe('stepped negative regex padding', () => {
+  it('matches the expanded values without adding an extra zero', () => {
+    for (const [start, end] of [['-05', '-01'], ['-01', '-05'], ['-05', '005']]) {
+      const values = fill(start, end, 2);
+      const regex = new RegExp(`^(?:${fill(start, end, 2, { toRegex: true })})$`);
+      for (const value of values) assert(regex.test(value), value);
+      assert(!regex.test('-001'));
+    }
+  });
+});
