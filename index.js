@@ -74,7 +74,7 @@ const toSequence = (parts, options, maxLen) => {
   }
 
   if (parts.negatives.length) {
-    negatives = `-(${prefix}${parts.negatives.map(v => toMaxLen(String(v), maxLen)).join('|')})`;
+    negatives = `-(${prefix}${parts.negatives.map(v => toMaxLen(String(v), maxLen - 1)).join('|')})`;
   }
 
   if (positives && negatives) {
