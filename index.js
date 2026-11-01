@@ -22,11 +22,31 @@ const isValidValue = value => {
 
 const isNumber = num => Number.isInteger(+num);
 
+const isValidStep = step => {
+  if (typeof step === 'number') return Number.isFinite(step);
+  if (typeof step === 'string' && step !== '') {
+    return Number.isFinite(+step) && /^-?\d*\.?\d+$/.test(step.trim());
+  }
+  return false;
+};
+
+const decimalPlaces = value => {
+  let str = String(value);
+  if (str.includes('e') || str.includes('E')) {
+    // normalize scientific notation via Number#toString after coercion
+    str = String(+value);
+  }
+  let i = str.indexOf('.');
+  return i === -1 ? 0 : str.length - i - 1;
+};
+
 const zeros = input => {
   let value = `${input}`;
   let index = -1;
   if (value[0] === '-') value = value.slice(1);
-  if (value === '0') return false;
+  // Leading-zero padding only applies to integer strings (e.g. "001"),
+  // not fractional values like "0.5".
+  if (value.includes('.') || value === '0') return false;
   while (value[++index] === '0');
   return index > 0;
 };
@@ -130,26 +150,31 @@ const invalidStep = (step, options) => {
 const fillNumbers = (start, end, step = 1, options = {}) => {
   let a = Number(start);
   let b = Number(end);
+  let startString = String(start);
+  let endString = String(end);
+  let stepString = String(step);
+  step = Math.abs(Number(step));
 
-  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+  if (!Number.isInteger(a) || !Number.isInteger(b) || !Number.isFinite(step)) {
     if (options.strictRanges === true) throw rangeError([start, end]);
     return [];
   }
+
+  // Step of 0 historically means "use 1" (see tests with step "0" / "-0").
+  if (step === 0) step = 1;
 
   // fix negative zero
   if (a === 0) a = 0;
   if (b === 0) b = 0;
 
   let descending = a > b;
-  let startString = String(start);
-  let endString = String(end);
-  let stepString = String(step);
-  step = Math.max(Math.abs(step), 1);
 
   let padded = zeros(startString) || zeros(endString) || zeros(stepString);
   let maxLen = padded ? Math.max(startString.length, endString.length, stepString.length) : 0;
   let toNumber = padded === false && stringify(start, end, options) === false;
   let format = options.transform || transform(toNumber);
+  let precision = Math.max(decimalPlaces(a), decimalPlaces(b), decimalPlaces(step));
+  let round = num => (precision > 0 ? Number(num.toFixed(precision)) : num);
 
   if (options.toRegex && step === 1) {
     return toRange(toMaxLen(start, maxLen), toMaxLen(end, maxLen), true, options);
@@ -161,12 +186,13 @@ const fillNumbers = (start, end, step = 1, options = {}) => {
   let index = 0;
 
   while (descending ? a >= b : a <= b) {
+    let value = round(a);
     if (options.toRegex === true && step > 1) {
-      push(a);
+      push(value);
     } else {
-      range.push(pad(format(a, index), maxLen, toNumber));
+      range.push(pad(format(value, index), maxLen, toNumber));
     }
-    a = descending ? a - step : a + step;
+    a = round(descending ? a - step : a + step);
     index++;
   }
 
@@ -233,13 +259,18 @@ const fill = (start, end, step, options = {}) => {
   if (opts.capture === true) opts.wrap = true;
   step = step || opts.step || 1;
 
-  if (!isNumber(step)) {
+  if (!isValidStep(step)) {
     if (step != null && !isObject(step)) return invalidStep(step, opts);
     return fill(start, end, 1, step);
   }
 
+  // Letter ranges still require an integer step (char codes).
   if (isNumber(start) && isNumber(end)) {
     return fillNumbers(start, end, step, opts);
+  }
+
+  if (!isNumber(step)) {
+    return invalidStep(step, opts);
   }
 
   return fillLetters(start, end, Math.max(Math.abs(step), 1), opts);
